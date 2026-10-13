@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alphabet Treasure Hunt!</title>
+    <style>
+        :root {
+            --bg-color: #FFEFBA;
+            --primary-color: #FF6B6B;
+            --secondary-color: #4ECDC4;
+            --accent-color: #FFE66D;
+            --text-color: #2D3436;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', 'cursive', sans-serif;
+            background: linear-gradient(135deg, #FFEFBA 0%, #FFFFFF 100%);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        #settings {
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            border: 4px solid var(--secondary-color);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .setting-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="text"] {
+            width: 40px;
+            font-size: 20px;
+            text-align: center;
+            text-transform: uppercase;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        button:hover {
+            transform: scale(1.1);
+            background-color: #ff4747;
+        }
+
+        #target-container {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: var(--accent-color);
+            border-radius: 20px;
+            border: 5px dashed var(--primary-color);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        #target-emoji {
+            font-size: 100px;
+            display: block;
+        }
+
+        #progress-text {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-top: 10px;
+        }
+
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 15px;
+            width: 100%;
+            max-width: 1100px;
+        }
+
+        .letter-card {
+            background: white;
+            aspect-ratio: 1 / 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #ddd;
+            transition: all 0.1s;
+            border: 3px solid transparent;
+            position: relative;
+        }
+
+        .letter-card:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #ddd;
+        }
+
+        .letter-text {
+            font-size: 54px;
+            font-weight: bold;
+            color: var(--text-color);
+            z-index: 2;
+        }
+
+        .card-id {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            font-family: Arial, sans-serif;
+            padding: 4px 8px;
+            border-radius: 10px;
+            color: white;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
+            text-transform: uppercase;
+        }
+
+        .correct {
+            background-color: #C1FFD7 !important;
+            border-color: #2ECC71 !important;
+            animation: celebrate 0.5s ease;
+        }
+
+        .wrong {
+            background-color: #FFD1D1 !important;
+            border-color: #E74C3C !important;
+            animation: shake 0.4s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        @keyframes celebrate {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="settings">
+        <div class="setting-group">
+            <label>Range: </label>
+            <input type="text" id="startLetter" value="A" maxlength="1">
+            <span>to</span>
+            <input type="text" id="endLetter" value="Z" maxlength="1">
+        </div>
+        <button onclick="initGame()">Start New Game!</button>
+    </div>
+
+    <div id="target-container">
+        <div id="target-emoji">🍎</div>
+        <div id="progress-text">Find both the Big and Small letters!</div>
+    </div>
+
+    <div id="game-board"></div>
+
+    <script>
+        const emojiMap = {
+            'A': '🍎', 'B': '⚽', 'C': '🐱', 'D': '🐶', 'E': '🐘', 'F': '🐟', 'G': '🐐', 'H': '👒', 
+            'I': '🛜', 'J': '🧃', 'K': '🦘', 'L': '🦁', 'M': '🐵', 'N': '👃', 'O': '🐙', 
+            'P': '🍕', 'Q': '👑', 'R': '🤖', 'S': '☀️', 'T': '🐯', 'U': '☂️', 'V': '🎻', 'W': '🍉', 
+            'X': '❌', 'Y': '🪀', 'Z': '🦓'
+        };
+
+        const coordinateColors = [
+            { name: 'Red', hex: '#FF4757' },
+            { name: 'Blue', hex: '#1E90FF' },
+            { name: 'Green', hex: '#2ED573' },
+            { name: 'Yellow', hex: '#FFA502' },
+            { name: 'Purple', hex: '#A55EEA' },
+            { name: 'Orange', hex: '#FF7F50' }
+        ];
+
+        let currentTarget = '';
+        let foundUpper = false;
+        let foundLower = false;
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function initGame() {
+            const start = document.getElementById('startLetter').value.toUpperCase();
+            const end = document.getElementById('endLetter').value.toUpperCase();
+            const board = document.getElementById('game-board');
+            board.innerHTML = '';
+            
+            // Reset tracking
+            foundUpper = false;
+            foundLower = false;
+            document.getElementById('progress-text').innerText = "Find both the Big and Small letters!";
+
+            const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            const sIdx = alphabet.indexOf(start);
+            const eIdx = alphabet.indexOf(end);
+            
+            if (sIdx === -1 || eIdx === -1 || sIdx > eIdx) {
+                alert("Please enter valid letters (e.g., A to M)");
+                return;
+            }
+
+            const rangeLetters = alphabet.slice(sIdx, eIdx + 1).split('');
+            
+            let gameLetters = [];
+            rangeLetters.forEach(l => {
+                gameLetters.push(l);
+                gameLetters.push(l.toLowerCase());
+            });
+
+            shuffle(gameLetters);
+
+            const targetChar = rangeLetters[Math.floor(Math.random() * rangeLetters.length)];
+            currentTarget = targetChar;
+            document.getElementById('target-emoji').innerText = emojiMap[targetChar] || '❓';
+
+            gameLetters.forEach((letter, index) => {
+                const card = document.createElement('div');
+                card.className = 'letter-card';
+                
+                const colorObj = coordinateColors[index % coordinateColors.length];
+                const colorNumber = Math.floor(index / coordinateColors.length) + 1;
+                
+                card.innerHTML = `
+                    <span class="card-id" style="background-color: ${colorObj.hex}">
+                        ${colorObj.name} ${colorNumber}
+                    </span>
+                    <span class="letter-text">${letter}</span>
+                `;
+
+                card.onclick = () => checkAnswer(card, letter);
+                board.appendChild(card);
+            });
+        }
+
+        function checkAnswer(element, letter) {
+            // If this card is already marked correct, do nothing
+            if (element.classList.contains('correct')) return;
+
+            if (letter.toUpperCase() === currentTarget) {
+                // Mark the specific case as found
+                if (letter === currentTarget) {
+                    foundUpper = true;
+                } else {
+                    foundLower = true;
+                }
+
+                element.classList.add('correct');
+                
+                // Update the progress text to give the student a hint
+                if (foundUpper && foundLower) {
+                    document.getElementById('progress-text').innerText = "You found both! 🌟";
+                    setTimeout(() => {
+                        alert("🌟 GREAT JOB! 🌟");
+                        initGame();
+                    }, 600);
+                } else {
+                    document.getElementById('progress-text').innerText = "One found! Now find the other one!";
+                }
+
+            } else {
+                element.classList.add('wrong');
+                setTimeout(() => element.classList.remove('wrong'), 500);
+            }
+        }
+
+        window.onload = initGame;
+    </script>
+</body>
+</html>
