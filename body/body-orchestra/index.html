@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Silliest Body Orchestra</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Comic Sans MS', 'Trebuchet MS', sans-serif;
+    background: linear-gradient(135deg, #ffd6a5 0%, #ffadad 40%, #caffbf 70%, #bde0fe 100%);
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center;
+    overflow-x: hidden;
+  }
+  h1 {
+    margin-top: 14px; font-size: 2.2rem; color: #fff; text-align: center;
+    text-shadow: 3px 3px 0 #ff6b6b, -2px -2px 0 #4d96ff;
+  }
+  #subtitle { color: #7a4d9e; font-weight: bold; margin: 6px 0 12px; font-size: 1.05rem; text-align: center; }
+
+  #settingsToggle {
+    background: #6c5ce7; color: #fff; border: none; border-radius: 16px;
+    padding: 10px 22px; font-family: inherit; font-weight: bold; font-size: 1rem;
+    cursor: pointer; box-shadow: 0 4px 0 rgba(0,0,0,0.2); margin-bottom: 10px;
+  }
+  #settingsToggle:active { transform: translateY(3px); }
+  #settingsPanel {
+    display: none; background: #fff; border-radius: 20px; padding: 16px 20px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15); max-width: 640px; width: 92%;
+    margin-bottom: 14px; text-align: left;
+  }
+  #settingsPanel.open { display: block; }
+  #settingsPanel h3 { color: #6c5ce7; text-align: center; margin-bottom: 10px; }
+  .catBlock { border: 2px dashed #d0c9ff; border-radius: 14px; padding: 10px 14px; margin-bottom: 10px; }
+  .catBlock h4 { color: #495057; margin-bottom: 6px; }
+  .catBlock label { display: inline-flex; align-items: center; gap: 5px; margin: 3px 8px 3px 0;
+    font-weight: bold; color: #495057; cursor: pointer; font-size: 0.95rem; }
+  .catBlock input { width: 16px; height: 16px; cursor: pointer; }
+
+  #game {
+    display: flex; flex-wrap: wrap; justify-content: center; align-items: stretch;
+    gap: 18px; width: 100%; max-width: 1000px; padding: 0 12px;
+  }
+  .panel {
+    background: #fff; border-radius: 24px; padding: 16px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  }
+  #facePanel { flex: 1 1 460px; max-width: 520px; text-align: center; transition: box-shadow 0.3s; }
+  #facePanel.yourTurn { box-shadow: 0 0 0 6px #ffd43b, 0 8px 30px rgba(255,180,0,0.5); }
+  #taskPanel { flex: 0 1 340px; max-width: 340px; text-align: center; display: flex; flex-direction: column; }
+
+  #faceCanvas { width: 100%; max-width: 420px; height: auto; cursor: pointer; }
+
+  #sayIt { font-size: 1.15rem; color: #4d96ff; font-weight: bold; min-height: 28px; margin-top: 4px; }
+  #partButtons { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 10px; }
+  .partBtn {
+    border: 3px solid #fff; border-radius: 16px; padding: 9px 14px;
+    font-size: 1.05rem; font-family: inherit; font-weight: bold;
+    color: #fff; cursor: pointer; box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+    transition: transform 0.1s, box-shadow 0.2s;
+  }
+  .partBtn:active, .partBtn.flash { transform: scale(1.18); }
+  .partBtn.flash { box-shadow: 0 0 18px 6px #fff; }
+  .partBtn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  #starRow { font-size: 2rem; min-height: 44px; letter-spacing: 4px; }
+  #fuseWrap { margin: 6px auto 10px; width: 80%; }
+  #fuseBar {
+    height: 16px; border-radius: 10px; background: #e9ecef;
+    border: 3px solid #adb5bd; overflow: hidden;
+  }
+  #fuseFill {
+    height: 100%; width: 100%;
+    background: linear-gradient(90deg, #ff6b6b, #ffd43b);
+    transition: width 0.5s ease;
+  }
+  #fuseLabel { font-size: 0.85rem; color: #868e96; font-weight: bold; margin-top: 2px; }
+  #catArea { font-size: 3.4rem; line-height: 1; margin: 4px 0; transition: transform 0.2s; }
+  #catArea.bounce { animation: catBounce 0.5s ease; }
+  @keyframes catBounce {
+    0% { transform: scale(1); } 40% { transform: scale(1.3) rotate(-8deg); }
+    70% { transform: scale(0.95) rotate(4deg); } 100% { transform: scale(1); }
+  }
+  #catBubble {
+    background: #f1f3ff; border: 3px solid #9b5de5; border-radius: 16px;
+    padding: 10px 12px; font-weight: bold; color: #5f3dc4;
+    font-size: 1.05rem; min-height: 52px; display: flex; align-items: center; justify-content: center;
+  }
+  #playPatternBtn {
+    border: none; border-radius: 18px; padding: 12px 20px;
+    font-size: 1.1rem; font-family: inherit; font-weight: bold;
+    background: #9b5de5; color: #fff; cursor: pointer;
+    box-shadow: 0 5px 0 #6a3aa8; margin: 12px 0 6px; width: 100%;
+  }
+  #playPatternBtn:active { transform: translateY(4px); box-shadow: 0 1px 0 #6a3aa8; }
+  #playPatternBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+  #turnBanner {
+    margin-top: auto; padding: 10px; border-radius: 14px;
+    font-size: 1.25rem; font-weight: bold; min-height: 48px;
+    display: flex; align-items: center; justify-content: center;
+    background: #e9ecef; color: #868e96; transition: all 0.3s;
+  }
+  #turnBanner.yourTurn { background: #fff3bf; color: #e67700; animation: pulse 1s ease infinite; }
+  @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+
+  #controls { margin: 14px 0 20px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .ctrlBtn {
+    border: none; border-radius: 16px; padding: 10px 18px;
+    font-size: 1rem; font-family: inherit; font-weight: bold;
+    cursor: pointer; color: #fff; box-shadow: 0 4px 0 rgba(0,0,0,0.15);
+  }
+  .ctrlBtn:active { transform: translateY(3px); }
+  #soundBtn { background: #845ef7; }
+  #restartBtn { background: #ff6b9d; }
+
+  .floater {
+    position: fixed; font-size: 2rem; font-weight: bold; pointer-events: none;
+    animation: floatUp 1s ease forwards; z-index: 20; text-shadow: 2px 2px 0 #fff;
+  }
+  @keyframes floatUp {
+    from { transform: translateY(0) scale(0.8); opacity: 1; }
+    to { transform: translateY(-70px) scale(1.3); opacity: 0; }
+  }
+
+  #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 9; }
+  #winOverlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+    z-index: 10; flex-direction: column; align-items: center; justify-content: center;
+  }
+  #winOverlay.show { display: flex; }
+  #winBox { background: #fff; border-radius: 28px; padding: 32px 44px; text-align: center; animation: popIn 0.4s ease; }
+  @keyframes popIn { from { transform: scale(0.5); } to { transform: scale(1); } }
+  #winBox h2 { font-size: 2.2rem; color: #ff6b6b; margin-bottom: 8px; }
+  #winBox p { font-size: 1.2rem; color: #4d96ff; margin-bottom: 16px; }
+
+  @media (max-width: 860px) {
+    h1 { font-size: 1.6rem; }
+    #taskPanel { flex: 1 1 100%; max-width: 520px; }
+  }
+</style>
+</head>
+<body>
+
+<h1>🎵 The Silliest Body Orchestra 🎵</h1>
+<div id="subtitle">Press a body part — it makes a silly sound! Copy the cat's pattern. You say the word!</div>
+
+<button id="settingsToggle">⚙️ Advanced Settings</button>
+<div id="settingsPanel">
+  <h3>🧰 Choose a body category & extra words</h3>
+  <div id="categoryBlocks"></div>
+</div>
+
+<div id="game">
+  <div class="panel" id="facePanel">
+    <canvas id="faceCanvas" width="420" height="420"></canvas>
+    <div id="sayIt">👆 Tap a body part — you say its name!</div>
+    <div id="partButtons"></div>
+  </div>
+
+  <div class="panel" id="taskPanel">
+    <div id="starRow">☆ ☆ ☆ ☆ ☆</div>
+    <div id="fuseWrap">
+      <div id="fuseBar"><div id="fuseFill"></div></div>
+      <div id="fuseLabel">⭐ Star power! Don't let it run out!</div>
+    </div>
+    <div id="catArea">🐱</div>
+    <div id="catBubble">I'll play a pattern... you copy it!</div>
+    <button id="playPatternBtn">▶️ Play the pattern</button>
+    <div id="turnBanner">Press ▶️ to start</div>
+  </div>
+</div>
+
+<div id="controls">
+  <button class="ctrlBtn" id="soundBtn">🔊 Sound: ON</button>
+  <button class="ctrlBtn" id="restartBtn">🔄 New Game</button>
+</div>
+
+<div id="confetti"></div>
+<div id="winOverlay">
+  <div id="winBox">
+    <div style="font-size:5rem;">🎺🎉</div>
+    <h2>You're the Orchestra Champion!</h2>
+    <p id="winText">5 stars! You played the silliest song ever!</p>
+    <button class="ctrlBtn" id="playAgainBtn" style="background:#4d96ff;">▶️ Play Again</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---------- Sound engine ----------
+  let soundOn = true;
+  const AC = window.AudioContext || window.webkitAudioContext;
+  let ctx = null;
+  function tone(freq, dur, type, vol, slideTo) {
+    if (!soundOn) return;
+    try {
+      if (!ctx) ctx = new AC();
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = type || 'sine';
+      o.frequency.setValueAtTime(freq, ctx.currentTime);
+      if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, ctx.currentTime + dur);
+      g.gain.setValueAtTime(vol || 0.15, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+      o.connect(g); g.connect(ctx.destination);
+      o.start(); o.stop(ctx.currentTime + dur);
+    } catch (e) {}
+  }
+
+  // ---------- Data: categories, parts, extras ----------
+  const CATEGORIES = {
+    face: {
+      name: '😀 Facial Features',
+      draw: 'face',
+      core: [
+        { id: 'eyes',  word: 'EYES',  emoji: '👁️', color: '#4d96ff', anim: 'blink',
+          sound: () => { tone(880, 0.1, 'triangle'); setTimeout(() => tone(1320, 0.12, 'triangle'), 110); },
+          spot: [210, 155] },
+        { id: 'ears',  word: 'EARS',  emoji: '👂', color: '#ff9f1c', anim: 'wiggle', spot: [60, 190],
+          sound: () => tone(300, 0.18, 'sawtooth', 0.12, 180) },
+        { id: 'nose',  word: 'NOSE',  emoji: '👃', color: '#e63976', anim: 'honka', spot: [210, 210],
+          sound: () => tone(160, 0.35, 'square', 0.12, 140) },
+        { id: 'mouth', word: 'MOUTH', emoji: '👄', color: '#2f9e44', anim: 'nom', spot: [210, 275],
+          sound: () => { [520, 620, 720].forEach((f, i) => setTimeout(() => tone(f, 0.1, 'sine'), i * 120)); } }
+      ],
+      extras: [
+        { id: 'eyebrows', word: 'EYEBROWS', emoji: '🙆', color: '#8d5a2b', anim: 'blink', spot: [175, 128],
+          sound: () => tone(700, 0.12, 'triangle') },
+        { id: 'cheeks', word: 'CHEEKS', emoji: '😊', color: '#ff8fa3', anim: 'blink', spot: [160, 225],
+          sound: () => tone(500, 0.15, 'sine') },
+        { id: 'chin', word: 'CHIN', emoji: '🤔', color: '#f0a868', anim: 'honka', spot: [210, 320],
+          sound: () => tone(220, 0.2, 'sine', 0.12) },
+        { id: 'neck', word: 'NECK', emoji: '🦒', color: '#c9a06c', anim: 'wiggle', spot: [210, 372],
+          sound: () => tone(400, 0.15, 'triangle') }
+      ]
+    },
+    body: {
+      name: '🧍 General Body',
+      draw: 'body',
+      core: [
+        { id: 'head', word: 'HEAD', emoji: '🙂', color: '#4d96ff', anim: 'honka', spot: [210, 70],
+          sound: () => tone(160, 0.3, 'square', 0.12, 140) },
+        { id: 'body', word: 'BODY', emoji: '👕', color: '#2f9e44', anim: 'nom', spot: [210, 210],
+          sound: () => { [520, 620, 720].forEach((f, i) => setTimeout(() => tone(f, 0.1, 'sine'), i * 120)); } },
+        { id: 'arms', word: 'ARMS', emoji: '💪', color: '#ff9f1c', anim: 'wiggle', spot: [90, 190],
+          sound: () => tone(300, 0.18, 'sawtooth', 0.12, 180) },
+        { id: 'legs', word: 'LEGS', emoji: '🦵', color: '#e63976', anim: 'blink', spot: [210, 350],
+          sound: () => { tone(880, 0.1, 'triangle'); setTimeout(() => tone(1320, 0.12, 'triangle'), 110); } }
+      ],
+      extras: [
+        { id: 'hands', word: 'HANDS', emoji: '✋', color: '#845ef7', anim: 'wiggle', spot: [55, 260],
+          sound: () => tone(600, 0.12, 'triangle') },
+        { id: 'feet', word: 'FEET', emoji: '🦶', color: '#20c997', anim: 'blink', spot: [180, 395],
+          sound: () => tone(450, 0.12, 'sine') },
+        { id: 'neckb', word: 'NECK', emoji: '🦒', color: '#c9a06c', anim: 'wiggle', spot: [210, 125],
+          sound: () => tone(400, 0.15, 'triangle') }
+      ]
+    },
+    torso: {
+      name: '👔 Torso',
+      draw: 'torso',
+      core: [
+        { id: 'shoulders', word: 'SHOULDERS', emoji: '🤷', color: '#4d96ff', anim: 'wiggle', spot: [120, 150],
+          sound: () => tone(300, 0.18, 'sawtooth', 0.12, 180) },
+        { id: 'chest', word: 'CHEST', emoji: '❤️', color: '#e63976', anim: 'honka', spot: [210, 190],
+          sound: () => tone(160, 0.3, 'square', 0.12, 140) },
+        { id: 'stomach', word: 'STOMACH', emoji: '🍽️', color: '#ff9f1c', anim: 'nom', spot: [210, 270],
+          sound: () => { [520, 620, 720].forEach((f, i) => setTimeout(() => tone(f, 0.1, 'sine'), i * 120)); } },
+        { id: 'back', word: 'BACK', emoji: '🔄', color: '#845ef7', anim: 'backflip', spot: [210, 220], isBack: true,
+          sound: () => { tone(440, 0.12, 'triangle'); setTimeout(() => tone(660, 0.15, 'triangle'), 130); } }
+      ],
+      extras: [
+        { id: 'bellybutton', word: 'BELLY BUTTON', emoji: '⭕', color: '#20c997', anim: 'honka', spot: [210, 262],
+          sound: () => tone(200, 0.18, 'sine', 0.12) },
+        { id: 'ribs', word: 'RIBS', emoji: '🦴', color: '#adb5bd', anim: 'blink', spot: [185, 185],
+          sound: () => tone(350, 0.15, 'square', 0.1) }
+      ]
+    },
+    arm: {
+      name: '💪 Arm',
+      draw: 'arm',
+      core: [
+        { id: 'elbow', word: 'ELBOW', emoji: '🦾', color: '#ff9f1c', anim: 'wiggle', spot: [260, 210],
+          sound: () => tone(300, 0.18, 'sawtooth', 0.12, 180) },
+        { id: 'wrist', word: 'WRIST', emoji: '⌚', color: '#4d96ff', anim: 'blink', spot: [230, 280],
+          sound: () => tone(880, 0.1, 'triangle') },
+        { id: 'hand', word: 'HAND', emoji: '✋', color: '#2f9e44', anim: 'nom', spot: [215, 340],
+          sound: () => { [520, 620, 720].forEach((f, i) => setTimeout(() => tone(f, 0.1, 'sine'), i * 120)); } },
+        { id: 'fingers', word: 'FINGERS', emoji: '🖐️', color: '#e63976', anim: 'blink', spot: [215, 375],
+          sound: () => { tone(990, 0.08, 'triangle'); setTimeout(() => tone(1320, 0.1, 'triangle'), 100); } }
+      ],
+      extras: [
+        { id: 'thumb', word: 'THUMB', emoji: '👍', color: '#845ef7', anim: 'nom', spot: [245, 330],
+          sound: () => tone(700, 0.12, 'sine') },
+        { id: 'forearm', word: 'FOREARM', emoji: '🦾', color: '#20c997', anim: 'wiggle', spot: [245, 250],
+          sound: () => tone(380, 0.15, 'triangle') },
+        { id: 'palm', word: 'PALM', emoji: '🖐️', color: '#ff8fa3', anim: 'blink', spot: [212, 345],
+          sound: () => tone(550, 0.12, 'sine') }
+      ]
+    },
+    leg: {
+      name: '🦵 Leg',
+      draw: 'leg',
+      core: [
+        { id: 'knee', word: 'KNEE', emoji: '🦵', color: '#e63976', anim: 'wiggle', spot: [210, 230],
+          sound: () => tone(300, 0.18, 'sawtooth', 0.12, 180) },
+        { id: 'ankle', word: 'ANKLE', emoji: '🦶', color: '#4d96ff', anim: 'blink', spot: [210, 330],
+          sound: () => tone(880, 0.1, 'triangle') },
+        { id: 'foot', word: 'FOOT', emoji: '👣', color: '#ff9f1c', anim: 'honka', spot: [210, 375],
+          sound: () => tone(160, 0.3, 'square', 0.12, 140) },
+        { id: 'toes', word: 'TOES', emoji: '🐾', color: '#2f9e44', anim: 'blink', spot: [240, 392],
+          sound: () => { tone(990, 0.08, 'triangle'); setTimeout(() => tone(1320, 0.1, 'triangle'), 100); } }
+      ],
+      extras: [
+        { id: 'thigh', word: 'THIGH', emoji: '🦵', color: '#845ef7', anim: 'wiggle', spot: [210, 140],
+          sound: () => tone(340, 0.15, 'sawtooth', 0.1) },
+        { id: 'heel', word: 'HEEL', emoji: '👠', color: '#20c997', anim: 'honka', spot: [185, 378],
+          sound: () => tone(240, 0.15, 'sine', 0.12) },
+        { id: 'shin', word: 'SHIN', emoji: '🦴', color: '#adb5bd', anim: 'blink', spot: [225, 285],
+          sound: () => tone(420, 0.12, 'square', 0.1) }
+      ]
+    }
+  };
+
+  // ---------- State ----------
+  const state = {
+    category: 'face',
+    enabledExtras: {},   // { face: ['eyebrows', ...], ... }
+    pattern: [], playerIndex: 0, round: 1, stars: 0,
+    inputLocked: true, won: false, currentAnim: null, fuse: 100,
+    backShowing: false
+  };
+  const MAX_ROUNDS = 5;
+
+  // DOM
+  const canvas = document.getElementById('faceCanvas');
+  const c = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const sayEl = document.getElementById('sayIt');
+  const starRow = document.getElementById('starRow');
+  const fuseFill = document.getElementById('fuseFill');
+  const catArea = document.getElementById('catArea');
+  const catBubble = document.getElementById('catBubble');
+  const playBtn = document.getElementById('playPatternBtn');
+  const turnBanner = document.getElementById('turnBanner');
+  const facePanel = document.getElementById('facePanel');
+  const partButtonsEl = document.getElementById('partButtons');
+  const settingsPanel = document.getElementById('settingsPanel');
+  const categoryBlocks = document.getElementById('categoryBlocks');
+  let floaters = [];
+  const partBtns = {};
+
+  // ---------- Settings UI ----------
+  function buildSettings() {
+    Object.keys(CATEGORIES).forEach(catKey => {
+      const cat = CATEGORIES[catKey];
+      const block = document.createElement('div');
+      block.className = 'catBlock';
+      const h = document.createElement('h4');
+      const radio = document.createElement('input');
+      radio.type = 'radio'; radio.name = 'category'; radio.value = catKey;
+      radio.checked = (catKey === state.category);
+      radio.addEventListener('change', () => { state.category = catKey; restart(); });
+      h.appendChild(radio);
+      h.appendChild(document.createTextNode(' ' + cat.name + '  '));
+      const coreNote = document.createElement('small');
+      coreNote.textContent = '(core: ' + cat.core.map(p => p.word.toLowerCase()).join(', ') + ')';
+      coreNote.style.color = '#868e96';
+      h.appendChild(coreNote);
+      block.appendChild(h);
+
+      cat.extras.forEach(ex => {
+        const lab = document.createElement('label');
+        const cb = document.createElement('input');
+        cb.type = 'checkbox'; cb.value = ex.id;
+        cb.checked = !!(state.enabledExtras[catKey] || []).includes(ex.id);
+        cb.addEventListener('change', () => {
+          if (!state.enabledExtras[catKey]) state.enabledExtras[catKey] = [];
+          const arr = state.enabledExtras[catKey];
+          if (cb.checked) arr.push(ex.id); else arr.splice(arr.indexOf(ex.id), 1);
+          buildPartButtons(); drawBody();
+        });
+        lab.appendChild(cb);
+        lab.appendChild(document.createTextNode(' ' + ex.emoji + ' ' + ex.word));
+        block.appendChild(lab);
+      });
+      categoryBlocks.appendChild(block);
+    });
+  }
+
+  function activeParts() {
+    const cat = CATEGORIES[state.category];
+    const extras = (state.enabledExtras[state.category] || [])
+      .map(id => cat.extras.find(e => e.id === id)).filter(Boolean);
+    return cat.core.concat(extras);
+  }
+
+  function buildPartButtons() {
+    partButtonsEl.innerHTML = '';
+    Object.values(partBtns).forEach(b => b.remove());
+    for (const k in partBtns) delete partBtns[k];
+    activeParts().forEach(p => {
+      const b = document.createElement('button');
+      b.className = 'partBtn';
+      b.id = 'pb_' + p.id;
+      b.textContent = p.emoji + ' ' + p.word;
+      b.style.background = p.color;
+      b.disabled = true;
+      b.addEventListener('click', () => {
+        if (state.inputLocked || state.won) return;
+        pressPart(p.id, false);
+      });
+      partButtonsEl.appendChild(b);
+      partBtns[p.id] = b;
+    });
+  }
+
+  // ---------- Drawing ----------
+  let animT = 0;
+  function drawBody() {
+    c.clearRect(0, 0, W, H);
+    const t = animT, a = state.currentAnim;
+    const skin = '#ffe3c2', line = '#f0b27a';
+    const cat = CATEGORIES[state.category];
+
+    if (cat.draw === 'face') drawFace(t, a, skin, line);
+    else if (cat.draw === 'body') drawBodyFigure(t, a, skin, line);
+    else if (cat.draw === 'torso') drawTorso(t, a, skin, line);
+    else if (cat.draw === 'arm') drawArm(t, a, skin, line);
+    else if (cat.draw === 'leg') drawLeg(t, a, skin, line);
+
+    // confetti particles
+    floaters.forEach(p => {
+      p.y -= p.speed; p.x += p.dx; p.life -= 0.02;
+      if (p.life > 0) {
+        c.globalAlpha = p.life;
+        c.fillStyle = p.color;
+        c.fillRect(p.x - 4, p.y - 4, 8, 8);
+        c.globalAlpha = 1;
+      }
+    });
+    floaters = floaters.filter(p => p.life > 0);
+  }
+
+  function animBlink(t) {
+    return t < 0.3 ? 1 - (t / 0.3) : (t < 0.7 ? 0.1 : 0.1 + (t - 0.7) / 0.3 * 0.9);
+  }
+
+  function drawFace(t, a, skin, line) {
+    const cx = 210, cy = 200;
+    c.beginPath(); c.arc(cx, cy, 150, 0, Math.PI * 2);
+    c.fillStyle = skin; c.fill(); c.lineWidth = 6; c.strokeStyle = line; c.stroke();
+
+    // neck (if enabled)
+    if (partBtns['neck']) {
+      c.fillStyle = skin; c.strokeStyle = line; c.lineWidth = 4;
+      c.fillRect(cx - 28, cy + 138, 56, 45);
+      c.strokeRect(cx - 28, cy + 138, 56, 45);
+    }
+
+    // ears (wiggle)
+    let earSwing = 0;
+    if (a === 'wiggle' && state.currentPart === 'ears') earSwing = Math.sin(t * Math.PI * 8) * 0.25 * (1 - Math.abs(t - 0.5) * 2);
+    [[-1, earSwing], [1, -earSwing]].forEach(([side, rot]) => {
+      c.save(); c.translate(cx + side * 150, cy - 10); c.rotate(rot);
+      c.beginPath(); c.arc(0, 0, 32, 0, Math.PI * 2);
+      c.fillStyle = skin; c.fill(); c.stroke();
+      c.beginPath(); c.arc(0, 0, 14, 0, Math.PI * 2);
+      c.fillStyle = '#ffc9a3'; c.fill();
+      c.restore();
+    });
+
+    // eyebrows (wiggle up/down)
+    if (partBtns['eyebrows']) {
+      let eb = 0;
+      if (a === 'blink' && state.currentPart === 'eyebrows') eb = -12 * Math.sin(t * Math.PI);
+      c.lineWidth = 6; c.strokeStyle = '#8d5a2b';
+      c.beginPath(); c.moveTo(cx - 75, cy - 72 + eb); c.lineTo(cx - 38, cy - 80 + eb);
+      c.moveTo(cx + 38, cy - 80 + eb); c.lineTo(cx + 75, cy - 72 + eb);
+      c.stroke();
+    }
+
+    // eyes
+    const er = 34;
+    let eyeScale = (a === 'blink' && state.currentPart === 'eyes') ? animBlink(t) : 1;
+    [[-55], [55]].forEach(([dx]) => {
+      c.save(); c.translate(cx + dx, cy - 45); c.scale(1, Math.max(eyeScale, 0.08));
+      c.lineWidth = 5; c.strokeStyle = line;
+      c.beginPath(); c.arc(0, 0, er, 0, Math.PI * 2);
+      c.fillStyle = '#fff'; c.fill(); c.stroke();
+      c.beginPath(); c.arc(0, 0, er * 0.55, 0, Math.PI * 2);
+      c.fillStyle = '#4d96ff'; c.fill();
+      c.beginPath(); c.arc(-6, -6, 6, 0, Math.PI * 2);
+      c.fillStyle = '#fff'; c.fill();
+      c.restore();
+    });
+
+    // cheeks (blush pulse)
+    if (partBtns['cheeks']) {
+      c.beginPath(); c.arc(cx - 95, cy + 25, 16, 0, Math.PI * 2);
+      c.arc(cx + 95, cy + 25, 16, 0, Math.PI * 2);
+      c.fillStyle = 'rgba(255,143,163,0.55)'; c.fill();
+    }
+
+    // nose
+    let noseR = 26;
+    if (a === 'honka' && (state.currentPart === 'nose' || state.currentPart === 'chin')) noseR = 26 + Math.sin(t * Math.PI) * (state.currentPart === 'chin' ? 6 : 14);
+    c.lineWidth = 5; c.strokeStyle = line;
+    c.beginPath(); c.arc(cx, cy + 10, noseR, 0, Math.PI * 2);
+    c.fillStyle = '#ffb38a'; c.fill(); c.stroke();
+    c.beginPath();
+    c.arc(cx - 8, cy + 4, 5, 0, Math.PI * 2);
+    c.arc(cx + 8, cy + 4, 5, 0, Math.PI * 2);
+    c.fillStyle = '#e08a5c'; c.fill();
+
+    // mouth / chin
+    const my = cy + 75;
+    c.lineWidth = 6; c.strokeStyle = '#c2452d';
+    if (a === 'nom' && state.currentPart === 'mouth') {
+      const chomp = Math.abs(Math.sin(t * Math.PI * 6)) * 40;
+      c.beginPath(); c.arc(cx, my - chomp / 2, 50, 0.12 * Math.PI, 0.88 * Math.PI); c.stroke();
+      c.beginPath(); c.moveTo(cx - 45, my + chomp / 2); c.lineTo(cx + 45, my + chomp / 2); c.stroke();
+    } else {
+      c.beginPath(); c.arc(cx, my - 20, 55, 0.15 * Math.PI, 0.85 * Math.PI); c.stroke();
+    }
+    if (partBtns['chin']) {
+      let chinR = 14;
+      if (a === 'honka' && state.currentPart === 'chin') chinR = 14 + Math.sin(t * Math.PI) * 8;
+      c.beginPath(); c.arc(cx, cy + 118, chinR, 0, Math.PI * 2);
+      c.fillStyle = '#ffd9b3'; c.fill(); c.stroke();
+    }
+  }
+
+  function drawBodyFigure(t, a, skin, line) {
+    // head
+    c.beginPath(); c.arc(210, 70, 48, 0, Math.PI * 2);
+    c.fillStyle = skin; c.fill(); c.lineWidth = 5; c.strokeStyle = line; c.stroke();
+    c.beginPath(); c.arc(195, 62, 6, 0, Math.PI * 2); c.arc(225, 62, 6, 0, Math.PI * 2);
+    c.fillStyle = '#333'; c.fill();
+    c.beginPath(); c.arc(210, 82, 16, 0.2 * Math.PI, 0.8 * Math.PI);
+    c.lineWidth = 4; c.strokeStyle = '#c2452d'; c.stroke();
+
+    // neck (extra)
+    if (partBtns['neckb']) {
+      c.fillStyle = skin; c.fillRect(196, 112, 28, 20);
+      c.strokeRect(196, 112, 28, 20);
+    }
+
+    // torso (body)
+    let torsoScale = 1, torsoWobble = 0;
+    if (a === 'nom' && state.currentPart === 'body') torsoScale = 1 + Math.sin(t * Math.PI) * 0.08;
+    c.save(); c.translate(210, 210); c.scale(torsoScale, torsoScale); c.translate(-210, -210);
+    c.beginPath();
+    c.roundRect ? c.roundRect(155, 130, 110, 130, 24) : c.rect(155, 130, 110, 130);
+    c.fillStyle = '#69db7c'; c.fill(); c.stroke();
+    c.restore();
+
+    // arms — wiggle
+    let armRot = 0;
+    if (a === 'wiggle' && state.currentPart === 'arms') armRot = Math.sin(t * Math.PI * 6) * 0.35;
+    [[-1, armRot], [1, -armRot]].forEach(([side, rot]) => {
+      c.save(); c.translate(side < 0 ? 155 : 265, 150); c.rotate(rot * side * -1);
+      c.lineWidth = 22; c.lineCap = 'round'; c.strokeStyle = '#ffd43b'; c.beginPath();
+      c.moveTo(0, 0); c.lineTo(0, 110); c.stroke();
+      c.restore();
+    });
+    // hands (extra)
+    if (partBtns['hands']) {
+      [[-1], [1]].forEach(([side]) => {
+        c.beginPath(); c.arc(side < 0 ? 155 : 265, 268, 18, 0, Math.PI * 2);
+        c.fillStyle = skin; c.fill(); c.stroke();
+      });
+    }
+
+    // legs — blink = little jumps
+    let legLift = 0;
+    if (a === 'blink' && state.currentPart === 'legs') legLift = Math.abs(Math.sin(t * Math.PI * 4)) * 18;
+    c.lineWidth = 26; c.lineCap = 'round'; c.strokeStyle = '#5b8def';
+    c.beginPath(); c.moveTo(185, 258); c.lineTo(185, 360 - legLift); c.stroke();
+    c.beginPath(); c.moveTo(235, 258); c.lineTo(235, 360 - legLift); c.stroke();
+
+    // feet (extra)
+    if (partBtns['feet']) {
+      c.fillStyle = '#e63976';
+      c.beginPath(); c.ellipse(178, 368 - legLift, 22, 10, 0, 0, Math.PI * 2); c.fill(); c.stroke();
+      c.beginPath(); c.ellipse(242, 368 - legLift, 22, 10, 0, 0, Math.PI * 2); c.fill(); c.stroke();
+    }
+  }
+
+  function drawTorso(t, a, skin, line) {
+    const flip = state.backShowing ? -1 : 1;
+    const wobble = (a === 'backflip' && state.currentPart === 'back') ? Math.sin(t * Math.PI * 2) * 0.15 : 0;
+    c.save();
+    c.translate(210, 210);
+    c.scale(flip + wobble, 1);
+    c.translate(-210, -210);
+
+    // shoulders + torso shape
+    c.beginPath();
+    c.moveTo(110, 150);
+    c.lineTo(310, 150);
+    c.lineTo(290, 330);
+    c.lineTo(130, 330);
+    c.closePath();
+    c.fillStyle = state.backShowing ? '#bde0fe' : '#ffd6a5';
+    c.fill(); c.lineWidth = 6; c.strokeStyle = line; c.stroke();
+
+    // neck hole
+    c.beginPath(); c.arc(210, 128, 26, 0, Math.PI * 2);
+    c.fillStyle = skin; c.fill(); c.stroke();
+
+    if (state.backShowing) {
+      // BACK SIDE: back of head, spine line, "BACK" label
+      c.beginPath(); c.arc(210, 100, 40, 0, Math.PI * 2);
+      c.fillStyle = '#e8c39a'; c.fill(); c.stroke();
+      c.fillStyle = '#c9a06c';
+      c.fillRect(204, 110, 12, 10);
+      c.lineWidth = 4; c.strokeStyle = '#d9b98c';
+      c.beginPath(); c.moveTo(210, 145); c.lineTo(210, 320); c.setLineDash([10, 8]); c.stroke();
+      c.setLineDash([]);
+      c.font = 'bold 22px sans-serif'; c.textAlign = 'center';
+      c.fillStyle = '#845ef7';
+      c.fillText('🔄 THIS IS THE BACK!', 210, 355);
+    } else {
+      // FRONT: heart on chest (pulse on honka), belly button, ribs marks
+      let heartScale = 1;
+      if (a === 'honka' && state.currentPart === 'chest') heartScale = 1 + Math.sin(t * Math.PI * 4) * 0.25;
+      c.save(); c.translate(210, 190); c.scale(heartScale, heartScale); c.translate(-210, -190);
+      c.font = '44px sans-serif'; c.textAlign = 'center';
+      c.fillText('❤️', 210, 205);
+      c.restore();
+
+      if (partBtns['ribs']) {
+        c.strokeStyle = '#e0b184'; c.lineWidth = 3;
+        for (let i = 0; i < 3; i++) {
+          c.beginPath(); c.arc(185, 175 + i * 14, 12, Math.PI, 0); c.stroke();
+          c.beginPath(); c.arc(235, 175 + i * 14, 12, Math.PI, 0); c.stroke();
+        }
+      }
+      if (partBtns['bellybutton']) {
+        let bbR = 7;
+        if (a === 'honka' && state.currentPart === 'bellybutton') bbR = 7 + Math.sin(t * Math.PI) * 5;
+        c.beginPath(); c.arc(210, 262, bbR, 0, Math.PI * 2);
+        c.fillStyle = '#d9a06b'; c.fill(); c.lineWidth = 3; c.strokeStyle = line; c.stroke();
+      }
+      // stomach wiggle lines when nom
+      if (a === 'nom' && state.currentPart === 'stomach') {
+        c.strokeStyle = '#e67700'; c.lineWidth = 3;
+        for (let i = 0; i < 3; i++) {
+          const off = Math.sin(t * Math.PI * 8 + i) * 6;
+          c.beginPath(); c.moveTo(185 + off, 250 + i * 12); c.lineTo(235 + off, 250 + i * 12); c.stroke();
+        }
+      }
+    }
+    // shoulders wiggle
+    let shrug = 0;
+    if (a === 'wiggle' && state.currentPart === 'shoulders') shrug = Math.abs(Math.sin(t * Math.PI * 6)) * 12;
+    c.fillStyle = skin; c.strokeStyle = line; c.lineWidth = 5;
+    c.beginPath(); c.arc(118, 152 - shrug, 22, 0, Math.PI * 2); c.fill(); c.stroke();
+    c.beginPath(); c.arc(302, 152 - shrug, 22, 0, Math.PI * 2); c.fill(); c.stroke();
+    c.restore();
+  }
+
+  function drawArm(t, a, skin, line) {
+    // upper arm from shoulder
+    c.lineWidth = 34; c.lineCap = 'round'; c.strokeStyle = '#ffd43b';
+    c.beginPath(); c.moveTo(300, 100); c.lineTo(260, 210); c.stroke();
+    // elbow joint
+    let elbowBend = 0;
+    if (a === 'wiggle' && state.currentPart === 'elbow') elbowBend = Math.sin(t * Math.PI * 6) * 0.4;
+    c.save(); c.translate(260, 210); c.rotate(elbowBend);
+    c.lineWidth = 30; c.lineCap = 'round'; c.strokeStyle = '#ffd43b';
+    c.beginPath(); c.moveTo(0, 0); c.lineTo(-50, 100); c.stroke();
+    // elbow circle
+    c.beginPath(); c.arc(0, 0, 24, 0, Math.PI * 2);
+    c.fillStyle = skin; c.fill(); c.lineWidth = 5; c.strokeStyle = line; c.stroke();
+    // wrist
+    let wristTwist = 0;
+    if (a === 'blink' && state.currentPart === 'wrist') wristTwist = Math.sin(t * Math.PI * 6) * 0.5;
+    c.save(); c.translate(-50, 100); c.rotate(wristTwist);
+    // hand
+    c.beginPath(); c.arc(0, 45, 34, 0, Math.PI * 2);
+    c.fillStyle = skin; c.fill(); c.stroke();
+    // fingers
+    let fingerSpread = 0;
+    if (a === 'blink' && (state.currentPart === 'fingers')) fingerSpread = Math.sin(t * Math.PI * 6) * 0.3;
+    c.lineWidth = 10; c.lineCap = 'round'; c.strokeStyle = skin;
+    for (let i = -2; i <= 2; i++) {
+      c.save(); c.translate(i * 13, 40); c.rotate(fingerSpread * i * 0.4);
+      c.beginPath(); c.moveTo(0, 0); c.lineTo(0, 38); c.stroke();
+      c.restore();
+    }
+    // thumb (extra)
+    if (partBtns['thumb']) {
+      let thumbUp = 0;
+      if (a === 'nom' && state.currentPart === 'thumb') thumbUp = Math.abs(Math.sin(t * Math.PI * 4)) * 0.5;
+      c.save(); c.rotate(-thumbUp);
+      c.lineWidth = 11; c.strokeStyle = skin;
+      c.beginPath(); c.moveTo(28, 42); c.lineTo(52, 20); c.stroke();
+      c.restore();
+    }
+    c.restore();
+    // forearm highlight (extra)
+    if (partBtns['forearm']) {
+      c.strokeStyle = 'rgba(255,255,255,0.7)'; c.lineWidth = 4;
+      c.beginPath(); c.moveTo(248, 235); c.lineTo(222, 295); c.stroke();
+    }
+    // palm circle (extra)
+    if (partBtns['palm']) {
+      c.beginPath(); c.arc(-50, 145, 14, 0, Math.PI * 2);
+      c.fillStyle = '#ffc9a3'; c.fill(); c.lineWidth = 3; c.strokeStyle = line; c.stroke();
+    }
+    c.restore();
+    // shoulder
+    c.beginPath(); c.arc(300, 100, 26, 0, Math.PI * 2);
+    c.fillStyle = skin; c.fill(); c.stroke();
+  }
+
+  function drawLeg(t, a, skin, line) {
+    // thigh
+    c.lineWidth = 40; c.lineCap = 'round'; c.strokeStyle = '#5b8def';
+    let thighWob = 0;
+    if (a === 'wiggle' && state.currentPart === 'thigh') thighWob = Math.sin(t * Math.PI * 6) * 0.2;
+    c.save(); c.translate(210, 60); c.rotate(thighWob);
+    c.beginPath(); c.moveTo(0, 0); c.lineTo(0, 170); c.stroke();
+    // knee
+    let kneeBend = 0;
+    if (a === 'wiggle' && state.currentPart === 'knee') kneeBend = Math.abs(Math.sin(t * Math.PI * 4)) * 0.35;
+    c.save(); c.translate(0, 170); c.rotate(kneeBend);
+    c.lineWidth = 34; c.lineCap = 'round'; c.strokeStyle = '#5b8def';
+    c.beginPath(); c.moveTo(0, 0); c.lineTo(0, 120); c.stroke();
+    c.beginPath(); c.arc(0, 0, 26, 0, Math.PI * 2);
+    c.fillStyle = skin; c.fill(); c.lineWidth = 5; c.strokeStyle = line; c.stroke();
+    // ankle
+    let ankleTwist = 0;
+    if (a === 'blink' && state.currentPart === 'ankle') ankleTwist = Math.sin(t * Math.PI * 6) * 0.4;
+    c.save(); c.translate(0, 120); c.rotate(ankleTwist);
+    // foot
+    let footTap = 0;
+    if (a === 'honka' && state.currentPart === 'foot') footTap = Math.abs(Math.sin(t * Math.PI * 6)) * 8;
+    c.save(); c.translate(0, 30 - footTap);
+    c.beginPath(); c.ellipse(25, 20, 48, 20, 0, 0, Math.PI * 2);
+    c.fillStyle = '#e63976'; c.fill(); c.stroke();
+    // toes
+    let toeWiggle = 0;
+    if (a === 'blink' && state.currentPart === 'toes') toeWiggle = Math.sin(t * Math.PI * 8) * 0.25;
+    c.lineWidth = 8; c.lineCap = 'round'; c.strokeStyle = '#ffc9a3';
+    for (let i = -2; i <= 2; i++) {
+      c.save(); c.translate(62 + i * 2, 12); c.rotate(toeWiggle * i * 0.5);
+      c.beginPath(); c.moveTo(0, 0); c.lineTo(10, 0); c.stroke();
+      c.restore();
+    }
+    // heel (extra)
+    if (partBtns['heel']) {
+      c.beginPath(); c.arc(-15, 22, 10, 0, Math.PI * 2);
+      c.fillStyle = '#c2452d'; c.fill();
+    }
+    c.restore();
+    // shin highlight (extra)
+    if (partBtns['shin']) {
+      c.strokeStyle = 'rgba(255,255,255,0.7)'; c.lineWidth = 4;
+      c.beginPath(); c.moveTo(8, 20); c.lineTo(8, 100); c.stroke();
+    }
+    c.restore();
+    c.restore();
+    // hip
+    c.beginPath(); c.arc(210, 60, 28, 0, Math.PI * 2);
+    c.fillStyle = skin; c.fill(); c.stroke();
+  }
+
+  // ---------- Animation loop ----------
+  function loop() {
+    if (state.currentAnim) {
+      animT += 0.03;
+      if (animT >= 1) {
+        animT = 0;
+        state.currentAnim = null;
+        if (state.currentPart === 'back') state.backShowing = false;
+        state.currentPart = null;
+      }
+    }
+    drawBody();
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+
+  // ---------- Interaction ----------
+  function burstConfetti(x, y) {
+    const colors = ['#ff6b6b', '#ffd43b', '#69db7c', '#4d96ff', '#ff9f1c', '#9b5de5', '#e63976'];
+    for (let i = 0; i < 18; i++) {
+      floaters.push({
+        x: x, y: y, dx: (Math.random() - 0.5) * 6,
+        speed: 1 + Math.random() * 3,
+        color: colors[i % colors.length], life: 1
+      });
+    }
+  }
+
+  function floatText(x, y, text, color) {
+    const el = document.createElement('div');
+    el.className = 'floater';
+    el.textContent = text;
+    el.style.left = x + 'px'; el.style.top = y + 'px'; el.style.color = color;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 1000);
+  }
+
+  function pressPart(partId, fromPattern) {
+    const p = activeParts().find(x => x.id === partId);
+    if (!p) return;
+    state.currentAnim = p.anim;
+    state.currentPart = partId;
+    animT = 0;
+    if (p.isBack) state.backShowing = true;
+    p.sound();
+    sayEl.textContent = p.emoji + ' — YOU say: "' + p.word.toLowerCase() + '"!';
+    sayEl.style.color = p.color;
+    partBtns[partId].classList.add('flash');
+    setTimeout(() => partBtns[partId].classList.remove('flash'), 350);
+    burstConfetti(p.spot[0], p.spot[1]);
+    const r = canvas.getBoundingClientRect();
+    const sx = r.left + p.spot[0] * (r.width / W);
+    const sy = r.top + p.spot[1] * (r.height / H);
+    if (!fromPattern) floatText(sx, sy, '⭐', p.color);
+    if (!fromPattern) handlePlayerInput(partId);
+  }
+
+  canvas.addEventListener('click', e => {
+    if (state.inputLocked || state.won) return;
+    const r = canvas.getBoundingClientRect();
+    const x = (e.clientX - r.left) * (W / r.width);
+    const y = (e.clientY - r.top) * (H / r.height);
+    let best = null, bestD = 60;
+    activeParts().forEach(p => {
+      const d = Math.hypot(x - p.spot[0], y - p.spot[1]);
+      if (d < bestD) { bestD = d; best = p; }
+    });
+    if (best) pressPart(best.id, false);
+  });
+
+  // ---------- Game logic ----------
+  function updateStars() {
+    starRow.textContent = Array.from({ length: MAX_ROUNDS }, (_, i) =>
+      i < state.stars ? '⭐' : '☆').join(' ');
+  }
+
+  function startRound() {
+    const parts = activeParts();
+    state.playerIndex = 0;
+    state.inputLocked = true;
+    if (state.pattern.length < state.round) {
+      state.pattern.push(parts[Math.floor(Math.random() * parts.length)].id);
+    }
+    catArea.textContent = '🐱';
+    catArea.classList.remove('bounce');
+    catBubble.textContent = 'Round ' + state.round + '! Listen to my pattern...';
+    playBtn.disabled = false;
+    turnBanner.textContent = 'Press ▶️ to hear the pattern';
+    turnBanner.className = '';
+    facePanel.classList.remove('yourTurn');
+    Object.values(partBtns).forEach(b => b.disabled = true);
+  }
+
+  function playPattern() {
+    state.inputLocked = true;
+    playBtn.disabled = true;
+    turnBanner.textContent = '🎧 Listen carefully...';
+    turnBanner.className = '';
+    facePanel.classList.remove('yourTurn');
+    let i = 0;
+    const step = () => {
+      if (i >= state.pattern.length) {
+        state.inputLocked = false;
+        catBubble.textContent = 'Your turn! Copy my pattern!';
+        catArea.textContent = '😺';
+        catArea.classList.remove('bounce');
+        void catArea.offsetWidth;
+        catArea.classList.add('bounce');
+        turnBanner.textContent = '👆 YOUR TURN!';
+        turnBanner.className = 'yourTurn';
+        facePanel.classList.add('yourTurn');
+        Object.values(partBtns).forEach(b => b.disabled = false);
+        return;
+      }
+      pressPart(state.pattern[i], true);
+      i++;
+      setTimeout(step, 850);
+    };
+    setTimeout(step, 500);
+  }
+
+  function handlePlayerInput(partId) {
+    if (state.inputLocked || state.won) return;
+    const expected = state.pattern[state.playerIndex];
+    if (partId === expected) {
+      sfxGood();
+      state.fuse = Math.min(100, state.fuse + 15);
+      fuseFill.style.width = state.fuse + '%';
+      state.playerIndex++;
+      if (state.playerIndex >= state.pattern.length) {
+        state.stars++;
+        state.fuse = 100;
+        fuseFill.style.width = '100%';
+        updateStars();
+        sfxRoundWin();
+        turnBanner.textContent = '🌟 Round complete! +1 star!';
+        turnBanner.className = 'yourTurn';
+        catBubble.textContent = 'Amazing! Get ready for the next round...';
+        state.round++;
+        if (state.round > MAX_ROUNDS) setTimeout(winGame, 1200);
+        else setTimeout(startRound, 1800);
+      }
+    } else {
+      sfxWrong();
+      state.fuse = Math.max(0, state.fuse - 25);
+      fuseFill.style.width = state.fuse + '%';
+      turnBanner.textContent = '🤔 Oops! Listen again...';
+      turnBanner.className = '';
+      catBubble.textContent = 'Oops! Press ▶️ to hear it again.';
+      state.inputLocked = true;
+      state.playerIndex = 0;
+      playBtn.disabled = false;
+      Object.values(partBtns).forEach(b => b.disabled = true);
+      facePanel.classList.remove('yourTurn');
+    }
+  }
+
+  function sfxGood() { tone(660, 0.1); setTimeout(() => tone(990, 0.18, 'triangle'), 110); }
+  function sfxWrong() { tone(180, 0.22, 'sawtooth', 0.1); }
+  function sfxRoundWin() {
+    [523, 659, 784, 1047].forEach((f, i) =>
+      setTimeout(() => tone(f, 0.25, 'triangle', 0.2), i * 140));
+  }
+  function sfxWin() {
+    [523, 659, 784, 1047, 1319].forEach((f, i) =>
+      setTimeout(() => tone(f, 0.3, 'triangle', 0.2), i * 150));
+  }
+
+  playBtn.addEventListener('click', () => { if (!playBtn.disabled) playPattern(); });
+
+  // ---------- Win ----------
+  const overlay = document.getElementById('winOverlay');
+  function winGame() {
+    state.won = true;
+    state.inputLocked = true;
+    sfxWin();
+    launchConfetti();
+    document.getElementById('winText').textContent =
+      '5 stars! You mastered: ' +
+      activeParts().map(p => p.word.toLowerCase()).join(', ') + '!';
+    turnBanner.textContent = '🏆 YOU WON!';
+    turnBanner.className = 'yourTurn';
+    setTimeout(() => overlay.classList.add('show'), 500);
+  }
+
+  function launchConfetti() {
+    const holder = document.getElementById('confetti');
+    const colors = ['#ff6b6b', '#ffd43b', '#69db7c', '#4d96ff', '#ff9f1c', '#9b5de5'];
+    for (let i = 0; i < 150; i++) {
+      const p = document.createElement('div');
+      p.style.cssText =
+        'position:absolute;top:-20px;left:' + Math.random() * 100 + '%;' +
+        'width:10px;height:14px;background:' + colors[i % colors.length] + ';border-radius:3px;';
+      holder.appendChild(p);
+      const fall = p.animate([
+        { transform: 'translateY(0) rotate(0deg)', opacity: 1 },
+        { transform: 'translateY(' + (window.innerHeight + 40) + 'px) rotate(' +
+          (Math.random() * 720 - 360) + 'deg)', opacity: 0.6 }
+      ], { duration: 2500 + Math.random() * 2500, easing: 'ease-in' });
+      fall.onfinish = () => p.remove();
+    }
+  }
+
+  // ---------- Controls ----------
+  document.getElementById('soundBtn').addEventListener('click', function () {
+    soundOn = !soundOn;
+    this.textContent = soundOn ? '🔊 Sound: ON' : '🔇 Sound: OFF';
+    if (soundOn) tone(880, 0.1, 'square', 0.08);
+  });
+  document.getElementById('settingsToggle').addEventListener('click', () => {
+    settingsPanel.classList.toggle('open');
+  });
+  document.getElementById('restartBtn').addEventListener('click', restart);
+  document.getElementById('playAgainBtn').addEventListener('click', restart);
+
+  function restart() {
+    state.pattern = []; state.round = 1; state.playerIndex = 0;
+    state.stars = 0; state.fuse = 100; state.won = false;
+    state.inputLocked = true; state.backShowing = false; state.currentPart = null;
+    overlay.classList.remove('show');
+    document.getElementById('confetti').innerHTML = '';
+    floaters = [];
+    fuseFill.style.width = '100%';
+    updateStars();
+    sayEl.textContent = '👆 Tap a body part — you say its name!';
+    sayEl.style.color = '#4d96ff';
+    buildPartButtons();
+    drawBody();
+    startRound();
+  }
+
+  // Keyboard: number keys press the Nth visible button, space = play pattern
+  document.addEventListener('keydown', e => {
+    if (state.won) return;
+    if (e.key === ' ' && !playBtn.disabled) { e.preventDefault(); playPattern(); return; }
+    if (state.inputLocked) return;
+    const n = parseInt(e.key, 10);
+    if (n >= 1) {
+      const visible = Object.values(partBtns).filter(b => !b.disabled);
+      if (visible[n - 1]) pressPart(activeParts()[n - 1].id, false);
+    }
+  });
+
+  // ---------- Init ----------
+  buildSettings();
+  buildPartButtons();
+  updateStars();
+  drawBody();
+  startRound();
+})();
+</script>
+</body>
+</html>
