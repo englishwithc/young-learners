@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Colour Number Magic!</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', 'cursive';
+            background-color: #f0faff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        #game-container {
+            background: white;
+            border: 8px solid #ffdf00;
+            border-radius: 30px;
+            padding: 30px;
+            box-shadow: 0 10px 0 #d4b100;
+            max-width: 850px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #ff477e;
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px #ffccd5;
+        }
+
+        /* New Reference Key Styling */
+        #global-reference {
+            background: #fff4cc;
+            border: 4px dashed #ffae42;
+            border-radius: 20px;
+            padding: 15px;
+            margin-bottom: 30px;
+        }
+
+        .ref-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #d35400;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .ref-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            justify-items: center;
+        }
+
+        .ref-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            padding: 5px 10px;
+            border-radius: 10px;
+            border: 2px solid #eee;
+            font-size: 1.2rem;
+            font-weight: bold;
+            box-shadow: 2px 2px 0 #ddd;
+        }
+
+        .ref-box {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 1px solid #333;
+        }
+
+        #star-counter {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        .star {
+            font-size: 3rem;
+            color: #ccc;
+            transition: color 0.3s;
+        }
+
+        .star.earned {
+            color: #ffdf00;
+            text-shadow: 0 0 10px #fff700;
+        }
+
+        #key-area {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            background: #fff9e6;
+            padding: 20px;
+            border-radius: 20px;
+            border: 3px solid #ffcc00;
+            margin-bottom: 30px;
+        }
+
+        .key-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            background: white;
+            padding: 10px 15px;
+            border-radius: 15px;
+            box-shadow: 0 4px 0 #ddd;
+        }
+
+        .colour-block {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            border: 2px solid #333;
+        }
+
+        #workspace {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 30px;
+            min-height: 200px;
+        }
+
+        .control-row {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-size: 2rem;
+            background: #eef;
+            padding: 15px 30px;
+            border-radius: 50px;
+            border: 3px solid #bbd;
+        }
+
+        .btn {
+            width: 60px;
+            height: 60px;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 50%;
+            border: none;
+            transition: transform 0.1s, background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+
+        .btn:active { transform: scale(0.9); }
+        .btn-minus { background: #ff6b6b; color: white; }
+        .btn-plus { background: #51cf66; color: white; }
+
+        .emoji-display {
+            min-width: 150px;
+            text-align: center;
+            font-size: 2.5rem;
+            letter-spacing: 5px;
+        }
+
+        #confirm-btn {
+            background: #4dabf7;
+            color: white;
+            font-size: 2rem;
+            padding: 15px 50px;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #339af0;
+            font-family: inherit;
+        }
+
+        #confirm-btn:hover { background: #339af0; }
+        #confirm-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #339af0; }
+
+        #message {
+            font-size: 1.5rem;
+            margin-top: 20px;
+            height: 30px;
+            font-weight: bold;
+        }
+
+        .win-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.9);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <h1>Colour Number Magic!</h1>
+        
+        <!-- Permanent Reference Key -->
+        <div id="global-reference">
+            <span class="ref-title">✨ Magic Colour Key ✨</span>
+            <div class="ref-grid">
+                <div class="ref-item">1 <div class="ref-box" style="background: red;"></div></div>
+                <div class="ref-item">2 <div class="ref-box" style="background: blue;"></div></div>
+                <div class="ref-item">3 <div class="ref-box" style="background: grey;"></div></div>
+                <div class="ref-item">4 <div class="ref-box" style="background: white;"></div></div>
+                <div class="ref-item">5 <div class="ref-box" style="background: orange;"></div></div>
+                <div class="ref-item">6 <div class="ref-box" style="background: black;"></div></div>
+                <div class="ref-item">7 <div class="ref-box" style="background: yellow;"></div></div>
+                <div class="ref-item">8 <div class="ref-box" style="background: green;"></div></div>
+                <div class="ref-item">9 <div class="ref-box" style="background: purple;"></div></div>
+                <div class="ref-item">0 <div class="ref-box" style="background: brown;"></div></div>
+            </div>
+        </div>
+
+        <div id="star-counter">
+            <span class="star" id="s1">★</span>
+            <span class="star" id="s2">★</span>
+            <span class="star" id="s3">★</span>
+            <span class="star" id="s4">★</span>
+            <span class="star" id="s5">★</span>
+        </div>
+
+        <div id="key-area"></div>
+
+        <div id="workspace"></div>
+
+        <button id="confirm-btn">Check Answer! ✨</button>
+        <div id="message"></div>
+    </div>
+
+    <div class="win-screen" id="win-screen">
+        <h1>🌟 YOU WON! 🌟</h1>
+        <p style="font-size: 2rem;">You are a Colour Master!</p>
+        <button id="restart-btn" style="font-size: 1.5rem; padding: 10px 30px; border-radius: 20px; cursor:pointer;">Play Again</button>
+    </div>
+
+    <script>
+        const colorMapping = {
+            'red': 1, 'blue': 2, 'grey': 3, 'white': 4, 'orange': 5,
+            'black': 6, 'yellow': 7, 'green': 8, 'purple': 9, 'brown': 0
+        };
+
+        const vocabulary = [
+            { word: 'Apple', emoji: '🍎' }, { word: 'Dog', emoji: '🐶' },
+            { word: 'Cat', emoji: '🐱' }, { word: 'Sun', emoji: '☀️' },
+            { word: 'Tree', emoji: '🌳' }, { word: 'Car', emoji: '🚗' },
+            { word: 'Fish', emoji: '🐟' }, { word: 'Cake', emoji: '🍰' },
+            { word: 'Bird', emoji: '🐦' }, { word: 'Ball', emoji: '⚽' },
+            { word: 'Moon', emoji: '🌙' }, { word: 'Star', emoji: '⭐' }
+        ];
+
+        let starsEarned = 0;
+        let currentRound = [];
+        let userCounts = {};
+
+        function initRound() {
+            const keyArea = document.getElementById('key-area');
+            const workspace = document.getElementById('workspace');
+            const message = document.getElementById('message');
+            
+            keyArea.innerHTML = '';
+            workspace.innerHTML = '';
+            message.innerText = '';
+            userCounts = {};
+            currentRound = [];
+
+            const shuffledVocab = [...vocabulary].sort(() => 0.5 - Math.random()).slice(0, 3);
+            const colors = Object.keys(colorMapping).sort(() => 0.5 - Math.random());
+
+            shuffledVocab.forEach((item, index) => {
+                const color = colors[index];
+                const value = colorMapping[color];
+                currentRound.push({ ...item, color, value });
+                userCounts[item.word] = 0;
+
+                const keyItem = document.createElement('div');
+                keyItem.className = 'key-item';
+                keyItem.innerHTML = `<span>${item.emoji} ${item.word}</span> <div class="colour-block" style="background: ${color}"></div>`;
+                keyArea.appendChild(keyItem);
+
+                const row = document.createElement('div');
+                row.className = 'control-row';
+                row.innerHTML = `
+                    <button class="btn btn-minus" onclick="changeCount('${item.word}', -1)">-</button>
+                    <div class="emoji-display" id="display-${item.word}"></div>
+                    <button class="btn btn-plus" onclick="changeCount('${item.word}', 1)">+</button>
+                `;
+                workspace.appendChild(row);
+                updateEmojiDisplay(item.word);
+            });
+        }
+
+        window.changeCount = function(word, delta) {
+            userCounts[word] = Math.max(0, userCounts[word] + delta);
+            updateEmojiDisplay(word);
+        };
+
+        function updateEmojiDisplay(word) {
+            const emoji = currentRound.find(i => i.word === word).emoji;
+            const display = document.getElementById(`display-${word}`);
+            display.innerText = emoji.repeat(userCounts[word]);
+        }
+
+        document.getElementById('confirm-btn').onclick = function() {
+            let isCorrect = true;
+            currentRound.forEach(item => {
+                if (userCounts[item.word] !== item.value) {
+                    isCorrect = false;
+                }
+            });
+
+            const message = document.getElementById('message');
+            if (isCorrect) {
+                message.innerText = "Correct! You got a star! ⭐";
+                message.style.color = "green";
+                starsEarned++;
+                updateStars();
+                
+                if (starsEarned >= 5) {
+                    showWinScreen();
+                } else {
+                    setTimeout(initRound, 2000);
+                }
+            } else {
+                message.innerText = "Not quite! Try again! ❌";
+                message.style.color = "red";
+            }
+        };
+
+        function updateStars() {
+            for (let i = 1; i <= 5; i++) {
+                const s = document.getElementById(`s${i}`);
+                if (i <= starsEarned) s.classList.add('earned');
+            }
+        }
+
+        function showWinScreen() {
+            document.getElementById('win-screen').style.display = 'flex';
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+        }
+
+        document.getElementById('restart-btn').onclick = function() {
+            starsEarned = 0;
+            updateStars();
+            document.getElementById('win-screen').style.display = 'none';
+            initRound();
+        };
+
+        initRound();
+    </script>
+</body>
+</html>
