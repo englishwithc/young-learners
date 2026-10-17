@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magic Grammar Adventure!</title>
+    <style>
+        :root {
+            --primary-bg: #FFEB3B;
+            --secondary-bg: #4FC3F7;
+            --accent-color: #FF4081;
+            --text-color: #333;
+            --white: #ffffff;
+            --success-green: #4CAF50;
+            --error-red: #f44336;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', 'cursive', sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        #game-container {
+            width: 90%;
+            max-width: 800px;
+            background: var(--white);
+            margin: 20px;
+            padding: 30px;
+            border-radius: 30px;
+            border: 8px solid var(--accent-color);
+            box-shadow: 0 10px 0px #C2185B;
+            text-align: center;
+            position: relative;
+        }
+
+        h1 {
+            color: var(--accent-color);
+            font-size: 3rem;
+            text-shadow: 2px 2px 0px #eee;
+            margin-bottom: 10px;
+        }
+
+        .step {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .instruction {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #555;
+        }
+
+        .display-area {
+            font-size: 5rem;
+            height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            background: #f9f9f9;
+            border-radius: 20px;
+            border: 4px dashed #ccc;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+
+        .sentence-box {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 20px 0;
+            min-height: 60px;
+            color: #2c3e50;
+        }
+
+        .highlight {
+            color: var(--accent-color);
+            text-decoration: underline;
+        }
+
+        .btn-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 15px;
+            font-size: 1.2rem;
+            font-family: inherit;
+            cursor: pointer;
+            border: none;
+            border-radius: 15px;
+            background: var(--secondary-bg);
+            color: white;
+            box-shadow: 0 5px 0px #0288D1;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            background: #29B6F6;
+        }
+
+        button:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0px #0288D1;
+        }
+
+        .next-btn {
+            background: #4CAF50;
+            box-shadow: 0 5px 0px #388E3C;
+            margin-top: 30px;
+            font-size: 1.8rem;
+            padding: 15px 40px;
+        }
+
+        /* Star Counter */
+        .star-container {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            background: #fff9c4;
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 50px;
+            border: 3px solid #fbc02d;
+        }
+
+        .star { color: #ccc; transition: color 0.3s; }
+        .star.active { color: #fbc02d; text-shadow: 0 0 10px orange; }
+
+        /* Win Modal */
+        #win-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+            text-align: center;
+        }
+
+        .win-content {
+            background: white;
+            color: #333;
+            padding: 50px;
+            border-radius: 40px;
+            border: 10px solid #FFD700;
+            animation: popUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popUp {
+            from { transform: scale(0); }
+            to { transform: scale(1); }
+        }
+
+        /* Quiz/Mistake buttons */
+        .quiz-option {
+            background: #fff;
+            color: #333;
+            border: 3px solid var(--secondary-bg);
+            box-shadow: 0 5px 0px var(--secondary-bg);
+        }
+
+        .correct { background: var(--success-green) !important; color: white !important; box-shadow: 0 5px 0px #388E3C !important; }
+        .wrong { background: var(--error-red) !important; color: white !important; box-shadow: 0 5px 0px #d32f2f !important; }
+
+        .mistake-box {
+            font-size: 2rem;
+            background: #ffebee;
+            padding: 20px;
+            border-radius: 20px;
+            border: 4px solid #ef9a9a;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🌈 Grammar Magic! 🌟</h1>
+
+    <div id="game-container">
+        
+        <!-- STEP 1: Singular -->
+        <div id="step1" class="step active">
+            <div class="instruction">Click an object to see what it is!</div>
+            <div class="display-area" id="s1-display">❓</div>
+            <div class="sentence-box" id="s1-sentence">Choose something!</div>
+            <div class="btn-grid" id="s1-btns"></div>
+            <button class="next-btn" onclick="nextStep(2)">I've got it! Next ➡️</button>
+        </div>
+
+        <!-- STEP 2: Plural -->
+        <div id="step2" class="step">
+            <div class="instruction">Oh look! Now there are MANY! Click an object!</div>
+            <div class="display-area" id="s2-display">❓❓</div>
+            <div class="sentence-box" id="s2-sentence">Choose something!</div>
+            <div class="btn-grid" id="s2-btns"></div>
+            <button class="next-btn" onclick="nextStep(3)">That's a lot! Next ➡️</button>
+        </div>
+
+        <!-- STEP 3: The Counting Machine -->
+        <div id="step3" class="step">
+            <div class="instruction">The Counting Machine! Use the buttons to add items.</div>
+            <div style="display:flex; justify-content:center; gap:20px; margin-bottom:20px;">
+                <button style="width:60px; height:60px; border-radius:50%; font-size:2rem;" onclick="changeCount(-1)">➖</button>
+                <button style="width:60px; height:60px; border-radius:50%; font-size:2rem;" onclick="changeCount(1)">➕</button>
+            </div>
+            <div class="display-area" id="s3-display"></div>
+            <div class="sentence-box" id="s3-sentence"></div>
+            <div class="btn-grid" id="s3-btns"></div>
+            <button class="next-btn" onclick="nextStep(4)">Ready for the Challenge? ➡️</button>
+        </div>
+
+        <!-- STEP 4: The Quiz -->
+        <div id="step4" class="step">
+            <div class="star-container" id="star-counter">
+                <span class="star">⭐</span><span class="star">⭐</span><span class="star">⭐</span><span class="star">⭐</span><span class="star">⭐</span>
+            </div>
+            <div class="instruction">Grammar Challenge! Which sentence is correct?</div>
+            <div class="display-area" id="s4-display"></div>
+            <div class="btn-grid" id="s4-options"></div>
+            <div class="sentence-box" id="s4-feedback"></div>
+            <button class="next-btn" id="quiz-next" style="display:none" onclick="generateQuiz()">Next Question! 🔄</button>
+        </div>
+
+        <!-- STEP 5: The Detective -->
+        <div id="step5" class="step">
+            <div class="instruction">🕵️ Grammar Detective! Is this sentence CORRECT or WRONG?</div>
+            <div class="mistake-box" id="s5-sentence"></div>
+            <div class="btn-grid" style="grid-template-columns: 1fr 1fr;">
+                <button onclick="checkMistake(true)" style="background:#4CAF50; box-shadow: 0 5px 0 #388E3C;">✅ Correct!</button>
+                <button onclick="checkMistake(false)" style="background:#f44336; box-shadow: 0 5px 0 #d32f2f;">❌ Wrong!</button>
+            </div>
+            <div class="sentence-box" id="s5-feedback"></div>
+            <button class="next-btn" id="det-next" style="display:none" onclick="generateMistake()">Next Mystery! 🔍</button>
+        </div>
+
+    </div>
+
+    <!-- Win Overlay -->
+    <div id="win-overlay">
+        <div class="win-content">
+            <h2 style="font-size: 3rem; color: var(--accent-color);">🎉 YOU WIN! 🎉</h2>
+            <p style="font-size: 1.5rem;">You collected 5 stars and became a Grammar Master!</p>
+            <div style="font-size: 5rem; margin: 20px;">🏆🌟🏆</div>
+            <button class="next-btn" onclick="nextStep(5)">Now, let's be a Detective! 🕵️</button>
+        </div>
+    </div>
+
+        <script>
+        const nouns = [
+            { name: 'Pencil', emoji: '✏️', plural: 'Pencils' },
+            { name: 'Pen', emoji: '🖊️', plural: 'Pens' },
+            { name: 'CD', emoji: '💿', plural: 'CDs' },
+            { name: 'Computer', emoji: '💻', plural: 'Computers' },
+            { name: 'Video Game', emoji: '🎮', plural: 'Video Games' },
+            { name: 'Crayon', emoji: '🖍️', plural: 'Crayons' },
+            { name: 'Marker', emoji: '🖌️', plural: 'Markers' },
+            { name: 'Notebook', emoji: '📓', plural: 'Notebooks' },
+            { name: 'Pencil Case', emoji: '👝', plural: 'Pencil Cases' },
+            { name: 'Cat', emoji: '🐱', plural: 'Cats' },
+            { name: 'Dog', emoji: '🐶', plural: 'Dogs' },
+            { name: 'Elephant', emoji: '🐘', plural: 'Elephants' },
+            { name: 'Owl', emoji: '🦉', plural: 'Owls' },
+        ];
+
+        const mistakes = [
+            { text: "They is 5 pencils.", correct: false, fix: "They are 5 pencils." },
+            { text: "It is a notebook.", correct: true, fix: "Perfect!" },
+            { text: "It is 2 banana.", correct: false, fix: "They are 2 bananas." },
+            { text: "They are 10 computers.", correct: true, fix: "Perfect!" },
+            { text: "It are a cat.", correct: false, fix: "It is a cat." },
+            { text: "They are 3 crayon.", correct: false, fix: "They are 3 crayons." },
+            { text: "It is an elephant.", correct: true, fix: "Perfect!" },
+            { text: "They is 12 pens.", correct: false, fix: "They are 12 pens." },
+        ];
+
+        let currentCount = 1;
+        let currentNoun = nouns[0];
+        let starCount = 0;
+
+        function getArticle(word) {
+            const vowels = ['a', 'e', 'i', 'o', 'u'];
+            return vowels.includes(word[0].toLowerCase()) ? 'an' : 'a';
+        }
+
+        function nextStep(stepNum) {
+            document.getElementById('win-overlay').style.display = 'none';
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+            document.getElementById('step' + stepNum).classList.add('active');
+            if(stepNum === 3) initStep3();
+            if(stepNum === 4) { starCount = 0; updateStars(); generateQuiz(); }
+            if(stepNum === 5) generateMistake();
+        }
+
+        // STEP 1: Singular Logic
+        const s1Btns = document.getElementById('s1-btns');
+        nouns.forEach(n => {
+            const btn = document.createElement('button');
+            btn.innerText = n.name;
+            btn.onclick = () => {
+                document.getElementById('s1-display').innerText = n.emoji;
+                document.getElementById('s1-sentence').innerHTML = `It is <span class="highlight">${getArticle(n.name)} ${n.name.toLowerCase()}</span>.`;
+            };
+            s1Btns.appendChild(btn);
+        });
+
+        // STEP 2: Plural Logic
+        const s2Btns = document.getElementById('s2-btns');
+        nouns.forEach(n => {
+            const btn = document.createElement('button');
+            btn.innerText = n.name;
+            btn.onclick = () => {
+                document.getElementById('s2-display').innerText = n.emoji + " " + n.emoji;
+                document.getElementById('s2-sentence').innerHTML = `They are <span class="highlight">${n.plural.toLowerCase()}</span>.`;
+            };
+            s2Btns.appendChild(btn);
+        });
+
+        // STEP 3: Counting Machine Logic
+        function initStep3() {
+            currentNoun = nouns[Math.floor(Math.random() * nouns.length)];
+            updateCountingDisplay();
+            const s3Btns = document.getElementById('s3-btns');
+            s3Btns.innerHTML = ''; 
+            nouns.forEach(n => {
+                const btn = document.createElement('button');
+                btn.innerText = n.name;
+                btn.onclick = () => {
+                    currentNoun = n;
+                    updateCountingDisplay();
+                };
+                s3Btns.appendChild(btn);
+            });
+        }
+
+        function changeCount(amt) {
+            currentCount += amt;
+            if (currentCount < 1) currentCount = 1;
+            if (currentCount > 10) currentCount = 10;
+            updateCountingDisplay();
+        }
+
+        function updateCountingDisplay() {
+            const display = document.getElementById('s3-display');
+            display.innerText = currentNoun.emoji.repeat(currentCount);
+            const sentence = document.getElementById('s3-sentence');
+            if (currentCount === 1) {
+                sentence.innerHTML = `It is <span class="highlight">${getArticle(currentNoun.name)} ${currentNoun.name.toLowerCase()}</span>.`;
+            } else {
+                sentence.innerHTML = `They are <span class="highlight">${currentCount} ${currentNoun.plural.toLowerCase()}</span>.`;
+            }
+        }
+
+        // STEP 4: Quiz Logic
+        function updateStars() {
+            const stars = document.querySelectorAll('.star');
+            stars.forEach((s, i) => {
+                s.classList.toggle('active', i < starCount);
+            });
+        }
+
+        function generateQuiz() {
+            document.getElementById('s4-feedback').innerText = '';
+            document.getElementById('quiz-next').style.display = 'none';
+            const noun = nouns[Math.floor(Math.random() * nouns.length)];
+            document.getElementById('s4-display').innerText = noun.emoji.repeat(Math.floor(Math.random() * 3) + 1);
+            
+            const isPlural = document.getElementById('s4-display').innerText.length > noun.emoji.length; 
+            // Note: Emoji length can be tricky, but for this simple app, checking repeat count is better
+            const count = (document.getElementById('s4-display').innerText.match(new RegExp(noun.emoji, 'g')) || []).length;
+            
+            const correctText = count === 1 ? `It is a ${noun.name.toLowerCase()}.` : `They are ${count} ${noun.plural.toLowerCase()}.`;
+            const wrongText = count === 1 ? `They are a ${noun.name.toLowerCase()}.` : `It is ${count} ${noun.plural.toLowerCase()}.`;
+            
+            const options = [correctText, wrongText].sort(() => Math.random() - 0.5);
+            const optionsContainer = document.getElementById('s4-options');
+            optionsContainer.innerHTML = '';
+
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.innerText = opt;
+                btn.className = 'quiz-option';
+                btn.onclick = () => {
+                    if (opt === correctText) {
+                        btn.classList.add('correct');
+                        document.getElementById('s4-feedback').innerText = "Correct! 🌟";
+                        starCount++;
+                        updateStars();
+                    } else {
+                        btn.classList.add('wrong');
+                        document.getElementById('s4-feedback').innerText = "Try again! ❌";
+                    }
+                    
+                    if (starCount >= 5) {
+                        document.getElementById('win-overlay').style.display = 'flex';
+                    } else {
+                        document.getElementById('quiz-next').style.display = 'inline-block';
+                    }
+                };
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        // STEP 5: Detective Logic
+        function generateMistake() {
+            document.getElementById('s5-feedback').innerText = '';
+            document.getElementById('det-next').style.display = 'none';
+            const m = mistakes[Math.floor(Math.random() * mistakes.length)];
+            document.getElementById('s5-sentence').innerText = m.text;
+            document.getElementById('s5-sentence').dataset.correct = m.correct;
+            document.getElementById('s5-sentence').dataset.fix = m.fix;
+        }
+
+        function checkMistake(choice) {
+            const sentence = document.getElementById('s5-sentence');
+            const isCorrect = sentence.dataset.correct === 'true';
+            
+            if (choice === isCorrect) {
+                document.getElementById('s5-feedback').innerHTML = `Correct! <span class="highlight">${sentence.dataset.fix}</span>`;
+            } else {
+                document.getElementById('s5-feedback').innerHTML = `Oops! <span class="highlight">${sentence.dataset.fix}</span>`;
+            }
+            document.getElementById('det-next').style.display = 'inline-block';
+        }
+    </script>
+
