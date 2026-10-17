@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simon Says – Toy Vocabulary</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div class="background-shape shape-one"></div>
+  <div class="background-shape shape-two"></div>
+  <div class="background-shape shape-three"></div>
+
+  <main class="app">
+    <header class="hero">
+      <div class="logo">🎲</div>
+
+      <div>
+        <p class="eyebrow">PLAY • LEARN • MOVE</p>
+        <h1>Simon Says!</h1>
+        <p class="subtitle">Toy vocabulary challenge</p>
+      </div>
+    </header>
+
+    <section class="control-card">
+      <div class="control-group">
+        <label for="timerInput">Show each word for</label>
+
+        <div class="input-with-unit">
+          <input
+            type="number"
+            id="timerInput"
+            min="1"
+            max="10"
+            value="4"
+          >
+          <span>seconds</span>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label for="modeSelect">Game mode</label>
+
+        <select id="modeSelect">
+          <option value="basic">🧸 Basic – Toys only</option>
+          <option value="actions">🎯 Actions + Toys</option>
+          <option value="hard">⚡ Hard – Rapid mode</option>
+          <option value="simonBob">🎭 Simon &amp; Bob – Listen carefully</option>
+        </select>
+      </div>
+
+      <div class="button-group">
+        <button id="startBtn" class="primary-button">
+          ▶ Start Game
+        </button>
+
+        <button id="stopBtn" class="secondary-button" disabled>
+          ■ Stop
+        </button>
+      </div>
+    </section>
+
+    <section class="game-card">
+      <div class="game-topline">
+        <span id="statusText">Ready to play?</span>
+
+        <span class="round-badge">
+          Round <strong id="roundNumber">0</strong>
+        </span>
+      </div>
+
+      <!-- Simon Says or Bob Says appears here -->
+      <div
+        id="commandBadge"
+        class="command-badge"
+        aria-live="assertive"
+        hidden
+      ></div>
+
+      <div id="itemBox" aria-live="polite">
+        <span class="welcome-emoji">🎉</span>
+        <span class="welcome-text">Press start!</span>
+      </div>
+
+      <div class="progress-labels">
+        <span>Get ready!</span>
+        <span id="timerLabel">4 seconds</span>
+      </div>
+
+      <div id="progressBar" aria-label="Time remaining">
+        <div id="progressFill"></div>
+      </div>
+
+      <p class="keyboard-hint">
+        Press <kbd>Space</kbd> to start or stop
+      </p>
+    </section>
+
+    <footer>
+      Learn the words, follow the action, and have fun! 🌈
+    </footer>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
