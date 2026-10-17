@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Young Learners — ESL Games Hub</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #f4f7fb;
+      color: #333;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+      text-align: center;
+      padding: 3rem 1.5rem 2.5rem;
+    }
+    .hero h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 0.4rem;
+    }
+    .hero p {
+        font-size: 1.05rem; opacity: 0.92; max-width: 560px; margin: 0 auto;
+    }
+
+    .scoring-banner {
+      max-width: 700px;
+      margin: -1.2rem auto 2rem;
+      padding: 1rem 1.4rem;
+      background: #fffbe6;
+      border: 2px solid #f5d913;
+      border-radius: 12px;
+      text-align: center;
+      font-size: 0.97rem;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+    }
+    .scoring-banner a { color: #b8860b; font-weight: 600; text-decoration: underline; }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.5rem;
+      max-width: 960px;
+      margin: 0 auto 1.8rem;
+      padding: 0 1rem;
+    }
+    .filters button {
+      border: none;
+      background: #e0e7f3;
+      color: #555;
+      font-size: 0.88rem;
+      padding: 0.45rem 1rem;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .filters button:hover, .filters button.active {
+        background: #667eea; color: #fff;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.4rem;
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 0 1.5rem 3rem;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      overflow: hidden;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+
+    .card-band { height: 6px; }
+
+    .card-body { padding: 1.2rem 1.4rem 1.4rem; }
+
+    .card-emoji { font-size: 2rem; margin-bottom: 0.3rem; }
+    .card-title { font-size: 1.15rem; font-weight: 700; margin-bottom: 0.4rem; }
+
+    .card-tags { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.8rem; }
+    .tag {
+      font-size: 0.75rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 10px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .card-desc { font-size: 0.92rem; color: #555; margin-bottom: 0.8rem; }
+
+    .expand-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      border: none;
+      background: #f0f2f7;
+      color: #667eea;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 0.4rem 0.9rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .expand-btn:hover { background: #e2e6f3; }
+    .expand-btn .arrow {
+        display: inline-block;
+        transition: transform .25s;
+        font-size: 0.7rem;
+    }
+    .card.open .expand-btn .arrow { transform: rotate(180deg); }
+
+    .expand-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height .35s ease, padding .35s ease;
+    }
+    .card.open .expand-content {
+        max-height: 300px;
+        padding-top: 0.8rem;
+    }
+
+    .tip-box {
+      background: #f0fdf4;
+      border-left: 4px solid #22c55e;
+      padding: 0.6rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      margin-bottom: 0.9rem;
+    }
+    .tip-box strong { color: #16a34a; }
+
+    .play-btn {
+      display: inline-block;
+      text-decoration: none;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.9rem;
+      padding: 0.55rem 1.3rem;
+      border-radius: 10px;
+      transition: opacity .2s;
+    }
+    .play-btn:hover { opacity: 0.88; }
+
+    .cat-alphabet   { background: #6366f1; }
+    .cat-grammar    { background: #eab308; color: #fff; }
+    .cat-body       { background: #ef4444; }
+    .cat-colours    { background: #3b82f6; }
+    .cat-numbers    { background: #10b981; }
+    .cat-family     { background: #f59e0b; }
+    .cat-shapes     { background: #a855f7; }
+    .cat-listening  { background: #ec4899; }
+
+    footer {
+      text-align: center;
+      padding: 1.5rem;
+      font-size: 0.82rem;
+      color: #999;
+    }
+
+    @media (max-width: 600px) {
+        .hero h1 { font-size: 1.6rem; }
+        .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="hero">
+    <h1>Young Learners ESL Games</h1>
+    <p>A collection of interactive, browser-based games for beginner English learners — from alphabet practice to grammar drills.</p>
+  </header>
+
+  <div class="scoring-banner">
+    Want points &amp; leaderboards? Use the free <a href="https://englishwithc.github.io/useful-games/scoring-pirates-plunder/" target="_blank">Scoring System</a> alongside any game — open it in a second window or side-by-side!
+  </div>
+
+  <div class="filters" id="filters">
+    <button class="active" data-filter="all">All Games</button>
+    <button data-filter="alphabet">Alphabet</button>
+    <button data-filter="grammar">Grammar</button>
+    <button data-filter="body">Body Parts</button>
+    <button data-filter="colours">Colours</button>
+    <button data-filter="numbers">Numbers</button>
+    <button data-filter="family">Family</button>
+    <button data-filter="shapes">Shapes</button>
+    <button data-filter="listening">Listening</button>
+  </div>
+
+  <main class="grid" id="grid"></main>
+
+  <footer>Hosted on GitHub Pages &bull; Built for young ESL learners</footer>
+
+<script>
+const GAMES = [
+  {
+    title: 'Alphabet Hunt',
+    emoji: '\ud83d\udd24',
+    category: ['alphabet'],
+    bandColor: '#6366f1',
+    url: './alphabet/alphabet-hunt/',
+    desc: 'Find the capital and lowercase letter that matches each emoji word on screen. Color-coded zones let students call out answers from their seats.',
+    tip: 'Great for reinforcing newly learned letters \u2014 practice what you just taught while peeking ahead to new ones.'
+  },
+  {
+    title: 'It Is / They Are',
+    emoji: '\ud83d\udc64',
+    category: ['grammar'],
+    bandColor: '#eab308',
+    url: './basic-grammar/it-is-they-are/',
+    desc: 'Interactive practice distinguishing singular and plural pronouns (it, he, she, they) in context.',
+    tip: 'Use alongside sentence-building activities to cement pronoun agreement.'
+  },
+  {
+    title: 'Body Orchestra',
+    emoji: '\ud83e\uddcf',
+    category: ['body'],
+    bandColor: '#ef4444',
+    url: './body/body-orchestra/',
+    desc: 'Watch a sequence of body parts light up, then repeat the pattern in the same order. Customize which body regions and words to include.',
+    tip: 'Combines rhythm, memory, and body-part vocabulary \u2014 great for kinesthetic learners.'
+  },
+  {
+    title: 'Colour Block Counter',
+    emoji: '\ud83d\udfe6',
+    category: ['colours', 'numbers'],
+    bandColor: '#3b82f6',
+    url: './colours-and-numbers/colour-block-counter/',
+    desc: 'Practice counting by color \u2014 call out quantities like "three green" or "five yellow." Toggle moving blocks for extra challenge, or click to remove them as you count.',
+    tip: 'Turn movement on/off to adjust difficulty. Click blocks directly to count and remove them.'
+  },
+  {
+    title: 'How Many Items?',
+    emoji: '\ud83c\udf4e',
+    category: ['colours', 'numbers'],
+    bandColor: '#10b981',
+    url: './colours-and-numbers/how-many-items/',
+    desc: 'Associate colors with numbers, then call out quantities using a color-key system (e.g., red = 1, green = 2). See the items appear on screen as you answer.',
+    tip: 'Use the color-to-number key to build number vocabulary in meaningful context.'
+  },
+  {
+    title: 'Family Alt Names',
+    emoji: '\ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d\udc67\u200d\ud83d\udc66',
+    category: ['family'],
+    bandColor: '#f59e0b',
+    url: './family/family-alt-names/',
+    desc: 'A matching game practicing alternative names for family members \u2014 mom / mommy, grandma / nana / grandmother, and more.',
+    tip: 'Perfect for introducing regional variations and informal terms alongside standard vocabulary.'
+  },
+  {
+    title: 'Family Surprise',
+    emoji: '\ud83c\udf89',
+    category: ['family'],
+    bandColor: '#f59e0b',
+    url: './family/family-surprise/',
+    desc: 'Flip cards to reveal family member characters behind them. Fully customizable word lists and card counts. A surprise silly face adds giggles!',
+    tip: 'Make the silly face moment fun for laughs. Students love replaying this one \u2014 endless fun.'
+  },
+  {
+    title: 'Shape Village',
+    emoji: '\ud83d\udd3a',
+    category: ['shapes'],
+    bandColor: '#a855f7',
+    url: './shapes/shape-village/',
+    desc: 'Call out shapes as they appear, randomized in different colors. Practice both shape names and color combos like "blue triangle" or "red circle."',
+    tip: 'Double-tap a review \u2014 shapes AND colors in one quick activity.'
+  },
+  {
+    title: 'Simon Says Toys',
+    emoji: '\ud83e\udd16',
+    category: ['listening'],
+    bandColor: '#ec4899',
+    url: './toys/simon-says-toys',
+    desc: 'A Simon Says game with a toy theme. Choose basic toys for beginners or add common action verbs. Includes faster mode, "Bob Says" variant (freeze on Bob), and an adjustable timer.',
+    tip: 'Start slow for beginners, then speed up as confidence grows. The "Bob Says" twist keeps everyone alert!'
+  }
+];
+
+const grid = document.getElementById('grid');
+
+function renderCards(filter) {
+  grid.innerHTML = '';
+  const visible = filter === 'all' ? GAMES : GAMES.filter(g => g.category.includes(filter));
+
+  visible.forEach((g) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.dataset.cat = g.category.join(',');
+
+    card.innerHTML = `
+      <div class="card-band" style="background:${g.bandColor}"></div>
+      <div class="card-body">
+        <div class="card-emoji">${g.emoji}</div>
+        <div class="card-title">${g.title}</div>
+        <div class="card-tags">
+          ${g.category.map(c => '<span class="tag cat-' + c + '">' + c.charAt(0).toUpperCase() + c.slice(1) + '</span>').join('')}
+        </div>
+        <p class="card-desc">${g.desc}</p>
+        <button class="expand-btn" onclick="event.stopPropagation(); this.closest('.card').classList.toggle('open')">
+          Details &amp; Tip <span class="arrow">▼</span>
+        </button>
+        <div class="expand-content">
+          <div class="tip-box"><strong>\ud83d\udca1 Tip:</strong> ${g.tip}</div>
+          <a class="play-btn" href="${g.url}" target="_blank">\u25b6 Play Game</a>
+        </div>
+      </div>
+    `;
+
+    card.addEventListener('click', function(e) {
+      if (e.target.closest('.play-btn')) return;
+      this.classList.toggle('open');
+    });
+
+    grid.appendChild(card);
+  });
+}
+
+document.getElementById('filters').addEventListener('click', function(e) {
+  if (e.target.tagName !== 'BUTTON') return;
+  document.querySelectorAll('.filters button').forEach(b => b.classList.remove('active'));
+  e.target.classList.add('active');
+  renderCards(e.target.dataset.filter);
+});
+
+renderCards('all');
+</script>
+</body>
+</html>
