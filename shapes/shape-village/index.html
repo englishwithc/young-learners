@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Shape Village Adventure!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #FFDE59;
+            --text-color: #5271ff;
+            --success-green: #7ED957;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            font-family: 'Fredoka One', cursive;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            background: radial-gradient(circle, #FFDE59 0%, #ffbd59 100%);
+        }
+
+        h1 {
+            color: #ff5733;
+            font-size: 3.5rem;
+            text-shadow: 4px 4px 0px white;
+            margin-bottom: 10px;
+        }
+
+        .instructions {
+            font-size: 1.6rem;
+            background: white;
+            padding: 12px 30px;
+            border-radius: 50px;
+            border: 5px solid #ff5733;
+            margin-bottom: 30px;
+            color: #5271ff;
+        }
+
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
+            width: 90%;
+            max-width: 1000px;
+        }
+
+        .shape-zone {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 40px;
+            border: 6px dashed white;
+        }
+
+        .shape {
+            width: 100px;
+            height: 100px;
+            cursor: grab;
+            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: bounce 2s infinite;
+        }
+
+        .shape:active {
+            cursor: grabbing;
+            transform: scale(1.2);
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Shape Styles */
+        .circle { border-radius: 50%; }
+        .square { border-radius: 20px; }
+        .triangle {
+            width: 0;
+            height: 0;
+            border-left: 50px solid transparent;
+            border-right: 50px solid transparent;
+            border-bottom: 100px solid;
+            border-radius: 0;
+            background: none !important;
+        }
+        .triangle.red { border-bottom-color: #ff5733; }
+        .triangle.blue { border-bottom-color: #5271ff; }
+        .triangle.yellow { border-bottom-color: #ffde59; }
+        .triangle.green { border-bottom-color: #7ED957; }
+        .triangle.purple { border-bottom-color: #9c27b0; }
+
+        .target-zone {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+        }
+
+        .house {
+            width: 180px;
+            height: 180px;
+            border: 8px solid white;
+            border-radius: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            text-align: center;
+            padding: 10px;
+            transition: all 0.3s;
+            box-shadow: 0 10px 0 rgba(0,0,0,0.1);
+        }
+
+        .house:hover {
+            transform: scale(1.1);
+        }
+
+        .house.circle-house { background-color: #9c27b0; color: white; }
+        .house.square-house { background-color: #7ed957; color: white; }
+        .house.triangle-house { background-color: #ff9100; color: white; }
+
+        #message {
+            position: fixed;
+            top: 20%;
+            font-size: 5rem;
+            color: white;
+            text-shadow: 6px 6px 0px #ff5733;
+            display: none;
+            pointer-events: none;
+            z-index: 10;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); }
+            100% { transform: scale(1); }
+        }
+
+        .confetti {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            animation: fall 3s linear infinite;
+        }
+
+        @keyframes fall {
+            to { transform: translateY(100vh) rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Shape Village!</h1>
+    <div class="instructions">Put each shape in its correct home!</div>
+
+    <div id="game-container">
+        <div class="shape-zone" id="shapes-to-drag">
+            <!-- Shapes generated by JS -->
+        </div>
+
+        <div class="target-zone">
+            <div class="house circle-house" data-type="circle">Circle House</div>
+            <div class="house square-house" data-type="square">Square House</div>
+            <div class="house triangle-house" data-type="triangle">Triangle House</div>
+        </div>
+    </div>
+
+    <div id="message"></div>
+
+    <script>
+        const shapeData = [
+            { id: 1, type: 'circle', color: 'red' },
+            { id: 2, type: 'circle', color: 'blue' },
+            { id: 3, type: 'circle', color: 'yellow' },
+            { id: 4, type: 'square', color: 'green' },
+            { id: 5, type: 'square', color: 'orange' },
+            { id: 6, type: 'square', color: 'purple' },
+            { id: 7, type: 'triangle', color: 'red' },
+            { id: 8, type: 'triangle', color: 'blue' },
+            { id: 9, type: 'triangle', color: 'yellow' }
+        ];
+
+        const shapeZone = document.getElementById('shapes-to-drag');
+        const houses = document.querySelectorAll('.house');
+        const message = document.getElementById('message');
+
+        function getColor(color) {
+            const colors = {
+                red: '#ff5733',
+                blue: '#5271ff',
+                yellow: '#ffde59',
+                green: '#7ed957',
+                orange: '#ff9100',
+                purple: '#9c27b0'
+            };
+            return colors[color];
+        }
+
+        function init() {
+            const shuffled = [...shapeData].sort(() => Math.random() - 0.5);
+            
+            shuffled.forEach(data => {
+                const div = document.createElement('div');
+                div.className = `shape ${data.type} ${data.color}`;
+                div.id = `shape-${data.id}`;
+                
+                if(data.type === 'triangle') {
+                    // Triangle specific styling
+                    div.style.borderBottomColor = getColor(data.color);
+                } else {
+                    div.style.backgroundColor = getColor(data.color);
+                }
+
+                div.draggable = true;
+                div.dataset.type = data.type;
+                div.dataset.color = data.color;
+                
+                div.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', e.target.id);
+                    // Visual feedback for selection
+                    div.style.opacity = "0.5";
+                });
+
+                div.addEventListener('dragend', () => {
+                    div.style.opacity = "1";
+                });
+
+                shapeZone.appendChild(div);
+            });
+        }
+
+        houses.forEach(house => {
+            house.addEventListener('dragover', (e) => {
+                e.preventDefault();
+            });
+
+            house.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const id = e.dataTransfer.getData('text/plain');
+                const shape = document.getElementById(id);
+                const houseType = house.getAttribute('data-type');
+                const shapeType = shape.getAttribute('data-type');
+
+                if (houseType === shapeType) {
+                    house.appendChild(shape);
+                    // Feedback: "You found a [Color] [Shape]!"
+                    showSuccess(shape.dataset.color, shapeType);
+                } else {
+                    // Shake effect if wrong
+                    house.style.transform = "translateX(10px)";
+                    setTimeout(() => house.style.transform = "translateX(-10px)", 100);
+                    setTimeout(() => house.style.transform = "translateX(0)", 200);
+                }
+            });
+        });
+
+        function showSuccess(color, shape) {
+            // Create a dynamic message like "Great Job! A Blue Circle!"
+            const words = color.charAt(0).toUpperCase() + color.slice(1);
+            const shapeWord = shape.charAt(0).toUpperCase() + shape.slice(1);
+            
+            message.innerHTML = `GREAT JOB!<br><span style="font-size: 3rem;">A ${words} ${shapeWord}!</span>`;
+            message.style.display = 'block';
+
+            // Create confetti
+            for(let i=0; i<30; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                confetti.style.animationDelay = Math.random() * 2 + 's';
+                document.body.appendChild(confetti);
+            }
+            
+            setTimeout(() => {
+                message.style.display = 'none';
+                document.querySelectorAll('.confetti').forEach(c => c.remove());
+            }, 2500);
+        }
+
+        init();
+    </script>
+</body>
+</html>
