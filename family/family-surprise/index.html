@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Surprise Game!</title>
+    <style>
+        body {
+            background-color: #ffefd5;
+            font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        h1 {
+            color: #ff4500;
+            font-size: 3rem;
+            text-shadow: 3px 3px 0px #fff, 6px 6px 0px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .game-container {
+            display: grid;
+            grid-template-columns: repeat(3, 150px);
+            gap: 20px;
+            perspective: 1000px;
+        }
+
+        .box {
+            width: 150px;
+            height: 150px;
+            cursor: pointer;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .box.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .box-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 20px;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+            font-size: 5rem;
+            user-select: none;
+        }
+
+        .box-front {
+            color: white;
+            font-weight: bold;
+            font-size: 2rem;
+            border: 8px solid rgba(255,255,255,0.3);
+        }
+
+        .box-back {
+            background-color: white;
+            transform: rotateY(180deg);
+            flex-direction: column;
+            font-size: 4rem;
+            border: 8px solid #ffd700;
+        }
+
+        .character-name {
+            font-size: 1.2rem;
+            color: #333;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        /* Box Colors */
+        .red { background-color: #ff4d4d; }
+        .green { background-color: #4caf50; }
+        .blue { background-color: #2196f3; }
+        .yellow { background-color: #ffeb3b; color: #333 !important; }
+        .pink { background-color: #e91e63; }
+        .orange { background-color: #ff9800; }
+
+        #reset-btn {
+            margin-top: 40px;
+            padding: 15px 30px;
+            font-size: 1.5rem;
+            background-color: #ff4500;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #b33000;
+            transition: all 0.1s;
+        }
+
+        #reset-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 #b33000;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            z-index: 100;
+        }
+
+        /* ===== Setup screen ===== */
+        .screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 20px;
+            max-width: 900px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .hidden { display: none !important; }
+
+        .subtitle {
+            color: #6b4a2b;
+            font-size: 1.3rem;
+            margin-top: -10px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .vocab-panel {
+            background: #fff;
+            border-radius: 25px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+            max-height: 55vh;
+            overflow-y: auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .vocab-group {
+            border: 3px solid #ffe0b3;
+            border-radius: 18px;
+            padding: 14px 18px;
+            margin-bottom: 14px;
+            background: #fffaf2;
+            transition: border-color 0.2s;
+        }
+
+        .vocab-group.has-selection {
+            border-color: #ff9800;
+            background: #fff7ea;
+        }
+
+        .group-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+
+        .group-emoji {
+            font-size: 2rem;
+        }
+
+        .group-label {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #6b4a2b;
+        }
+
+        .variant-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding-left: 10px;
+        }
+
+        .variant-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 50px;
+            border: 3px solid #ffd9a0;
+            background: white;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 1.05rem;
+            color: #8a6d3b;
+            transition: all 0.15s;
+            user-select: none;
+        }
+
+        .variant-toggle:hover {
+            border-color: #ff9800;
+            transform: translateY(-2px);
+        }
+
+        .variant-toggle.selected {
+            background: #ff9800;
+            border-color: #ff9800;
+            color: white;
+            box-shadow: 0 4px 10px rgba(255,152,0,0.4);
+        }
+
+        .group-select-btns {
+            margin-left: auto;
+            display: flex;
+            gap: 8px;
+        }
+
+        .mini-btn {
+            font-family: inherit;
+            font-size: 0.85rem;
+            padding: 5px 12px;
+            border-radius: 30px;
+            border: 2px solid #ffd9a0;
+            background: white;
+            color: #8a6d3b;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .mini-btn:hover { border-color: #ff9800; color: #ff4500; }
+
+        .setup-controls {
+            margin-top: 25px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        #start-btn {
+            padding: 15px 40px;
+            font-size: 1.6rem;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #2e7d32;
+            transition: all 0.1s;
+        }
+
+        #start-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 #2e7d32;
+        }
+
+        .select-all-btn {
+            padding: 12px 25px;
+            font-size: 1rem;
+            background-color: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #1565c0;
+        }
+
+        .select-all-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #1565c0; }
+
+        .selected-count {
+            color: #6b4a2b;
+            font-size: 1.1rem;
+        }
+
+        #change-vocab-btn {
+            margin-top: 15px;
+            padding: 10px 22px;
+            font-size: 1rem;
+            background-color: #9c27b0;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #6a1b9a;
+        }
+
+        #change-vocab-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #6a1b9a; }
+    </style>
+</head>
+<body>
+
+    <!-- ===== Setup screen ===== -->
+    <div class="screen" id="setup-screen">
+        <h1>Choose Your Family! 👨‍👩‍👧‍👦</h1>
+        <p class="subtitle">Tap the words you want in the game — every version of a word can be turned on or off.</p>
+
+        <div class="vocab-panel" id="vocab-panel">
+            <!-- Filled by JavaScript -->
+        </div>
+
+        <div class="setup-controls">
+            <button class="select-all-btn" id="select-all-btn">Select All ✨</button>
+            <span class="selected-count" id="selected-count"></span>
+            <button id="start-btn">Let's Play! 🎉</button>
+        </div>
+    </div>
+
+    <!-- ===== Game screen ===== -->
+    <div class="screen hidden" id="game-screen">
+        <h1>Who is hiding? 🕵️‍♂️</h1>
+
+        <div class="game-container" id="game-grid">
+            <!-- Boxes will be generated by JavaScript -->
+        </div>
+
+        <button id="reset-btn" onclick="initGame()">Play Again! 🔄</button>
+        <button id="change-vocab-btn" onclick="showSetup()">Change Family Words 📝</button>
+    </div>
+
+    <script>
+        // Each variant of a word gets its own toggle, but belongs to a group.
+        const vocabGroups = [
+            {
+                group: 'Mother',
+                emoji: '👩',
+                variants: [
+                    { name: 'Mother', emoji: '👩' },
+                    { name: 'Mum', emoji: '👩‍🍼' },
+                    { name: 'Mom', emoji: '🤱' },
+                    { name: 'Mommy', emoji: '💗👩' }
+                ]
+            },
+            {
+                group: 'Father',
+                emoji: '👨',
+                variants: [
+                    { name: 'Father', emoji: '👨' },
+                    { name: 'Dad', emoji: '👨‍🍼' },
+                    { name: 'Daddy', emoji: '💗👨' }
+                ]
+            },
+            {
+                group: 'Brother',
+                emoji: '👦',
+                variants: [
+                    { name: 'Brother', emoji: '👦' },
+                    { name: 'Baby Sister', emoji: '👧', note: '(also in Sister group)' }
+                ]
+            },
+            {
+                group: 'Sister',
+                emoji: '👧',
+                variants: [
+                    { name: 'Sister', emoji: '👧' },
+                    { name: 'Baby Sister', emoji: '👶🎀' }
+                ]
+            },
+            {
+                group: 'Baby',
+                emoji: '👶',
+                variants: [
+                    { name: 'Baby', emoji: '👶' }
+                ]
+            },
+            {
+                group: 'Grandmother',
+                emoji: '👵',
+                variants: [
+                    { name: 'Grandmother', emoji: '👵' },
+                    { name: 'Grandma', emoji: '👵💗' }
+                ]
+            },
+            {
+                group: 'Grandfather',
+                emoji: '👴',
+                variants: [
+                    { name: 'Grandfather', emoji: '👴' },
+                    { name: 'Grandpa', emoji: '👴💗' }
+                ]
+            },
+            {
+                group: 'Uncle',
+                emoji: '🧔',
+                variants: [
+                    { name: 'Uncle', emoji: '🧔' }
+                ]
+            },
+            {
+                group: 'Aunt',
+                emoji: '👩‍🦰',
+                variants: [
+                    { name: 'Aunt', emoji: '👩‍🦰' }
+                ]
+            },
+            {
+                group: 'Cousin',
+                emoji: '🧒',
+                variants: [
+                    { name: 'Cousin', emoji: '🧒' }
+                ]
+            }
+        ];
+
+        const ALWAYS = [{ name: 'SILLY FACE!', emoji: '🤪' }];
+
+        const colors = [
+            { name: 'Red', class: 'red' },
+            { name: 'Green', class: 'green' },
+            { name: 'Blue', class: 'blue' },
+            { name: 'Yellow', class: 'yellow' },
+            { name: 'Pink', class: 'pink' },
+            { name: 'Orange', class: 'orange' }
+        ];
+
+        // Selected variant names (persisted)
+        let selected = new Set();
+
+        const STORAGE_KEY = 'familyGame.selectedVariants';
+        const DEFAULT_SELECTED = ['Mother', 'Father', 'Brother', 'Sister', 'Baby', 'SILLY FACE!'];
+
+        function loadSelection() {
+            try {
+                const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+                if (Array.isArray(saved) && saved.length > 0) {
+                    selected = new Set(saved);
+                    return;
+                }
+            } catch (e) { /* ignore */ }
+            selected = new Set(DEFAULT_SELECTED);
+        }
+
+        function saveSelection() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify([...selected]));
+            } catch (e) { /* ignore */ }
+            updateCount();
+        }
+
+        function getSelectedCharacters() {
+            const chars = [];
+            vocabGroups.forEach(g => g.variants.forEach(v => {
+                if (selected.has(v.name)) chars.push({ name: v.name, emoji: v.emoji });
+            }));
+            chars.push(...ALWAYS);
+            return chars;
+        }
+
+        // ===== Setup screen =====
+        function buildSetup() {
+            const panel = document.getElementById('vocab-panel');
+            panel.innerHTML = '';
+
+            vocabGroups.forEach((g, gi) => {
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'vocab-group';
+                groupDiv.id = 'group-' + gi;
+
+                const header = document.createElement('div');
+                header.className = 'group-header';
+
+                const emoji = document.createElement('span');
+                emoji.className = 'group-emoji';
+                emoji.textContent = g.emoji;
+
+                const label = document.createElement('span');
+                label.className = 'group-label';
+                label.textContent = g.group;
+                header.appendChild(emoji);
+                header.appendChild(label);
+
+                const btns = document.createElement('span');
+                btns.className = 'group-select-btns';
+
+                const allBtn = document.createElement('button');
+                allBtn.className = 'mini-btn';
+                allBtn.textContent = 'All';
+                allBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    g.variants.forEach(v => selected.add(v.name));
+                    saveSelection();
+                    refreshSetup();
+                };
+
+                const noneBtn = document.createElement('button');
+                noneBtn.className = 'mini-btn';
+                noneBtn.textContent = 'None';
+                noneBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    g.variants.forEach(v => selected.delete(v.name));
+                    saveSelection();
+                    refreshSetup();
+                };
+
+                btns.appendChild(allBtn);
+                btns.appendChild(noneBtn);
+                header.appendChild(btns);
+                groupDiv.appendChild(header);
+
+                const row = document.createElement('div');
+                row.className = 'variant-row';
+                g.variants.forEach(v => {
+                    const t = document.createElement('button');
+                    t.className = 'variant-toggle' + (selected.has(v.name) ? ' selected' : '');
+                    t.textContent = v.emoji + ' ' + v.name;
+                    t.onclick = () => {
+                        if (selected.has(v.name)) selected.delete(v.name);
+                        else selected.add(v.name);
+                        saveSelection();
+                        refreshSetup();
+                    };
+                    row.appendChild(t);
+                });
+                groupDiv.appendChild(row);
+                panel.appendChild(groupDiv);
+            });
+        }
+
+        function refreshSetup() {
+            vocabGroups.forEach((g, gi) => {
+                const div = document.getElementById('group-' + gi);
+                const hasAny = g.variants.some(v => selected.has(v.name));
+                div.classList.toggle('has-selection', hasAny);
+                div.querySelectorAll('.variant-toggle').forEach(t => {
+                    const name = t.textContent.replace(/^\S+\s/, '');
+                    t.classList.toggle('selected', selected.has(name));
+                });
+            });
+            updateCount();
+        }
+
+        function updateCount() {
+            const count = selected.size;
+            const el = document.getElementById('selected-count');
+            el.textContent = count === 0
+                ? 'No words selected yet!'
+                : `${count} word${count > 1 ? 's' : ''} selected 🎯`;
+        }
+
+        function showSetup() {
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('setup-screen').classList.remove('hidden');
+            refreshSetup();
+        }
+
+        function showGame() {
+            document.getElementById('setup-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            initGame();
+        }
+
+        document.getElementById('start-btn').addEventListener('click', () => {
+            if (selected.size === 0) {
+                alert('Please pick at least one family word! 😊');
+                return;
+            }
+            saveSelection();
+            showGame();
+        });
+
+        document.getElementById('select-all-btn').addEventListener('click', () => {
+            const everything = ['SILLY FACE!'];
+            vocabGroups.forEach(g => g.variants.forEach(v => everything.push(v.name)));
+            selected = new Set(everything);
+            saveSelection();
+            refreshSetup();
+        });
+
+        // ===== Game =====
+        function shuffle(array) {
+            return array.sort(() => Math.random() - 0.5);
+        }
+
+        function initGame() {
+            const grid = document.getElementById('game-grid');
+            grid.innerHTML = '';
+
+            // Pick 6 unique characters: always include SILLY FACE, fill the rest
+            // randomly from the selected vocabulary.
+            const pool = shuffle(getSelectedCharacters());
+            const silly = pool.find(c => c.name === 'SILLY FACE!') || ALWAYS[0];
+            const rest = shuffle(pool.filter(c => c.name !== 'SILLY FACE!')).slice(0, 5);
+            const characters = shuffle([silly, ...rest]);
+
+            colors.forEach((color, index) => {
+                const char = characters[index];
+
+                const box = document.createElement('div');
+                box.className = 'box';
+                box.onclick = () => {
+                    box.classList.add('flipped');
+                    if (char.name === 'SILLY FACE!') {
+                        celebrate();
+                    }
+                };
+
+                box.innerHTML = `
+                    <div class="box-face box-front ${color.class}">
+                        ${color.name}
+                    </div>
+                    <div class="box-face box-back">
+                        <div>${char.emoji}</div>
+                        <div class="character-name">${char.name}</div>
+                    </div>
+                `;
+
+                grid.appendChild(box);
+            });
+        }
+
+        function celebrate() {
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.top = Math.random() * 100 + 'vh';
+                confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+                document.body.appendChild(confetti);
+
+                setTimeout(() => confetti.remove(), 2000);
+            }
+        }
+
+        // Start on the setup screen
+        loadSelection();
+        buildSetup();
+        showSetup();
+    </script>
+</body>
+</html>
