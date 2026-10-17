@@ -9,7 +9,7 @@ This is a single-page index hub (`index.html`) that links to all the individual 
 ## 🚀 How to Use It
 
 1. **Navigate to this repo** on GitHub:  
-   https://englishwithc.github.io/young-learners/index.html
+   https://englishwithc.github.io/young-learners/
 
 2. **Use the filter buttons** at the top to quickly jump between categories like Alphabet, Grammar, Body Parts, Colours, Numbers, Family, Shapes, and Listening.
 
