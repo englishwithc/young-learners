@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>The Yummy Yum Cafe — I like / I don't like</title>
+<meta name="description" content="A super fun classroom game to practise 'I like' and 'I don't like'! Perfect for young English learners.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍽️</text></svg>">
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-theme="food">
+
+<div id="bgDecor" aria-hidden="true"></div>
+<div id="fxLayer" aria-hidden="true"></div>
+<div id="flyLayer" aria-hidden="true"></div>
+
+<div id="utilityBar">
+  <button id="soundToggle" class="util-btn" title="Sound on/off" aria-label="Toggle sound">🔊</button>
+  <button id="fullscreenToggle" class="util-btn" title="Fullscreen" aria-label="Toggle fullscreen">⛶</button>
+</div>
+
+<!-- ============ SCREEN 0 : THEME PICKER ============ -->
+<section id="screen-theme" class="screen active">
+  <div class="screen-inner theme-inner">
+    <div class="masthead">
+      <div class="masthead-emoji" id="themeMastEmoji">🍽️</div>
+      <h1 class="game-title">The Yummy Yum Cafe</h1>
+      <p class="game-sub">Practise <span class="like-phrase">“I like!”</span> and <span class="dislike-phrase">“I don't like!”</span></p>
+    </div>
+    <h2 class="pick-title" id="pickSub">⋆˙⟡ First… pick your world! ⟡˙⋆</h2>
+    <div class="theme-grid" id="themeGrid"></div>
+    <p class="pill-note">Teachers: the built-in picture packs work instantly, or drop in your own images! 🖼️</p>
+  </div>
+</section>
+
+<!-- ============ SCREEN 1 : SETUP ============ -->
+<section id="screen-setup" class="screen">
+  <div class="screen-inner setup-inner">
+    <header class="setup-header">
+      <button id="backToThemes" class="round-btn" aria-label="Back to themes">←</button>
+      <div class="setup-title-wrap">
+        <h1 class="venue-title" id="venueTitle">The Yummy Yum Cafe 🍽️</h1>
+        <p class="venue-sub" id="venueSub">Who is eating today? What is on the menu?</p>
+      </div>
+    </header>
+
+    <div class="setup-columns">
+      <div class="setup-panel players-panel">
+        <h2 class="panel-title" id="playersPanelTitle">⭐ The Players</h2>
+        <div class="add-player-row">
+          <input id="playerNameInput" type="text" maxlength="14" placeholder="Type a name…" autocomplete="off">
+          <button id="addPlayerBtn" class="add-btn" type="button"><span>＋</span> Add</button>
+        </div>
+        <div id="playerList" class="player-list"></div>
+        <p class="panel-hint">Add 2–6 players. Tap a name to change it, tap an animal to pick a face!</p>
+      </div>
+
+      <div class="setup-panel items-panel">
+        <h2 class="panel-title" id="itemsPanelTitle">🍕 Today's Menu</h2>
+
+        <div class="starter-row">
+          <button id="starterToggle" class="starter-toggle" type="button">
+            <span class="starter-emoji">🎁</span>
+            <span class="starter-text">Use the built-in pack <small>(<span id="starterCount">12</span> items, free!)</small></span>
+            <span class="check-box">✔</span>
+          </button>
+        </div>
+
+        <div id="uploadZone" class="upload-zone" tabindex="0" role="button" aria-label="Upload pictures">
+          <div class="upload-icon">🖼️</div>
+          <p class="upload-main"><strong>Drop pictures right here!</strong></p>
+          <p class="upload-sub">or click to choose files — funny combos are the best!</p>
+          <input type="file" id="fileInput" accept="image/*" multiple hidden>
+        </div>
+
+        <div id="newUploadsBar" class="new-uploads-bar" hidden>
+          <div id="newUploadsList" class="new-uploads-list"></div>
+          <button id="confirmUploadsBtn" class="add-btn" type="button">✔ Keep these!</button>
+        </div>
+
+        <div id="itemList" class="item-list"></div>
+        <p class="panel-hint" id="itemHint">Names are optional — a mystery item is fun too!</p>
+      </div>
+    </div>
+
+    <div class="setup-footer">
+      <button id="startGameBtn" class="grand-btn" disabled>
+        <span class="grand-emoji">🥳</span>
+        <span class="grand-text">OPEN THE CAFE!</span>
+        <span class="grand-emoji">🥳</span>
+      </button>
+      <p class="footer-hint" id="setupFooterHint">Add 2+ players and 2+ items to open!</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SCREEN 2 : GAME ============ -->
+<section id="screen-game" class="screen">
+  <div class="screen-inner game-inner">
+
+    <header class="game-header">
+      <div class="score-chip chip-like"><span class="chip-icon">👍</span><span id="likeCount" class="chip-num">0</span></div>
+      <div class="round-info">
+        <div class="venue-mini" id="venueMini">🍽️ The Yummy Yum Cafe</div>
+        <div id="progressDots"></div>
+        <div class="item-counter-wrap">
+          <div class="item-counter"><span id="itemIndex">1</span>/<span id="itemTotal">6</span></div>
+        </div>
+      </div>
+      <div class="score-chip chip-dislike"><span class="chip-icon">👎</span><span id="dislikeCount" class="chip-num">0</span></div>
+    </header>
+
+    <div id="stage">
+      <div class="pedestal-wrap">
+        <div class="spotlight"></div>
+        <div id="speechBubble" class="speech-bubble" aria-live="polite">
+          <span id="bubbleText">Here we go…!</span>
+          <span class="bubble-tail"></span>
+        </div>
+        <div class="pedestal">
+          <div id="itemDisplay" class="item-display"></div>
+          <div class="pedestal-base"></div>
+        </div>
+        <div id="itemName" class="item-name">…</div>
+      </div>
+
+      <div class="vote-controls" id="voteControls" hidden>
+        <button id="dragHintBtn" class="mini-btn" type="button">🖐️ Drag me to a friend… or to the bin!</button>
+        <div class="verdict-row">
+          <button id="verdictLikeBtn" class="verdict-btn like" type="button">👍 LIKE IT!</button>
+          <button id="verdictDislikeBtn" class="verdict-btn dislike" type="button">👎 DON'T LIKE IT!</button>
+        </div>
+        <button id="skipFoodBtn" class="mini-btn skip-btn" type="button" style="align-self:center">⏭ Skip this one</button>
+      </div>
+
+      <div id="playerPlateZone" class="player-plate-zone" hidden></div>
+      <div id="trashZone" class="trash-zone" hidden>
+        <div class="trash-body">
+          <div class="trash-lid"></div>
+          <div class="trash-face">(＞﹏＜)</div>
+        </div>
+        <div class="trash-label">NOPE! 🔥</div>
+      </div>
+    </div>
+
+    <div class="voting-bar" id="votingBar">
+      <div id="playerCards" class="player-cards"></div>
+    </div>
+
+    <!-- live mini showcase tray -->
+    <div id="showcaseTray" class="showcase-tray">
+      <button id="trayCloseBtn" class="tray-close" aria-label="Close tray">✖</button>
+      <div class="tray-label" id="trayLabel">⭐ TODAY'S MENU ⭐</div>
+      <div class="tray-items"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TIE OVERLAY ============ -->
+<div id="tieOverlay" class="overlay" hidden>
+  <div class="tie-box">
+    <div class="tie-score" id="tieScore">🤔 2 : 2 🤔</div>
+    <div class="tie-emoji-row" id="tieEmojiRow">😍 🆚 🤢</div>
+    <div class="tie-title">It's a TIE! You decide, teacher!</div>
+    <div class="tie-btns">
+      <button id="tieKeepBtn" class="keep-btn" type="button">🟢 KEEP IT!</button>
+      <button id="tieTrashBtn" class="trash-btn" type="button">🔴 TRASH IT!</button>
+    </div>
+    <p class="tie-hint">Ask the class to shout their vote!</p>
+  </div>
+</div>
+
+<!-- ============ TRASH SPLASH ============ -->
+<div id="trashSplash" class="trash-splash" hidden>
+  <div class="bin" id="splashBin">🗑️</div>
+  <div class="x-line" id="splashX">YUCK!</div>
+  <div class="count-line" id="splashVotes">👍 0 · 👎 0</div>
+  <div class="result-actions">
+    <button id="splashNextBtn" class="grand-btn" type="button"><span class="grand-emoji">▶️</span><span class="grand-text">NEXT!</span></button>
+  </div>
+</div>
+
+<!-- ============ SCREEN 3 : FINALE ============ -->
+<section id="screen-finale" class="screen">
+  <div class="screen-inner finale-inner">
+    <div class="finale-head">
+      <h1 class="finale-title" id="finaleTitle">🍽️ Grand Finale! 🎉</h1>
+      <p class="finale-score" id="finaleScore"></p>
+    </div>
+
+    <div class="showcase-panel">
+      <div class="case-marquee" id="caseMarquee">⭐ TODAY'S MENU ⭐</div>
+      <div class="case-window" id="caseWindow"></div>
+      <div class="customers-row" id="customersRow"></div>
+    </div>
+
+    <button id="hallBtn" class="mini-btn" type="button">🖼️ Show the Hall of Fame!</button>
+
+    <div class="finale-section">
+      <h2 class="section-title" id="hallTitle">🏆 Hall of Fame 🏆</h2>
+      <div class="hall-grid" id="hallGrid"></div>
+    </div>
+
+    <div class="finale-section">
+      <h2 class="section-title" id="awardsTitle">🎖️ Award Time! 🎖️</h2>
+      <div class="award-grid" id="awardGrid"></div>
+    </div>
+
+    <div class="finale-section">
+      <h2 class="section-title" id="recapTitle">📖 What did we say?</h2>
+      <div class="recap-box" id="recapBox"></div>
+    </div>
+
+    <div class="finale-btns">
+      <button id="restartBtn" class="grand-btn" type="button"><span class="grand-emoji">🔁</span><span class="grand-text">PLAY AGAIN</span></button>
+      <button id="fullRestartBtn" class="round-btn" title="Change theme or players" aria-label="Back to start">🏠</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HALL OVERLAY (big window version) ============ -->
+<div id="hallOverlay" class="overlay" hidden>
+  <div class="hall-big-box">
+    <button id="hallCloseBtn" class="round-btn" aria-label="Close">✖</button>
+    <h2 class="hall-big-title">🏆 Hall of Fame — "I like" Collections! 🏆</h2>
+    <div class="hall-grid big" id="hallOverlayGrid"></div>
+  </div>
+</div>
+
+<script src="game.js"></script>
+</body>
+</html>
