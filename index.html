@@ -168,6 +168,7 @@
     .cat-family     { background: #f59e0b; }
     .cat-shapes     { background: #a855f7; }
     .cat-listening  { background: #ec4899; }
+    .cat-reading    { background: #f59e0b; color: #fff; }
 
     footer {
       text-align: center;
@@ -203,6 +204,7 @@
     <button data-filter="family">Family</button>
     <button data-filter="shapes">Shapes</button>
     <button data-filter="listening">Listening</button>
+    <button data-filter="reading">Reading</button>
   </div>
 
   <main class="grid" id="grid"></main>
@@ -291,6 +293,15 @@ const GAMES = [
     url: './toys/simon-says-toys',
     desc: 'A Simon Says game with a toy theme. Choose basic toys for beginners or add common action verbs. Includes faster mode, "Bob Says" variant (freeze on Bob), and an adjustable timer.',
     tip: 'Start slow for beginners, then speed up as confidence grows. The "Bob Says" twist keeps everyone alert!'
+  },
+  {
+    title: 'CVC Reading Fun!',
+    emoji: '\ud83d\udcd6',
+    category: ['reading'],
+    bandColor: '#f59e0b',
+    url: './read/cv-cvc-reading/',
+    desc: 'A step-by-step guide to teaching children how to read basic CV and CVC words. Features interactive games, phonics practice, and full audio support — every word is sounded out with voices.',
+    tip: 'Perfect for early readers! Students progress from 2-letter blends (CV) to 3-letter words (CVC), building confidence with each level.'
   }
 ];
 
