@@ -5,19 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Weather Talk! — Ask &amp; answer about the weather</title>
 <!--
-  Weather Talk! · a single-file, offline lesson app for young beginners.
-  No external images, fonts or scripts. Speech uses the browser's built-in voice.
-  The vocabulary bar at the top turns whole word sets on and off everywhere.
+  Weather Talk! · single-file offline lesson app for young beginners.
+  No external images, fonts or scripts. Speech uses the browser's own voice.
 -->
 <style>
   :root{
-    --ink:#17233f;
-    --blue:#4AA8E0;
-    --sun:#FFD34D;
-    --mint:#2FBF71;
-    --coral:#FF7A6B;
-    --muted:#5A6B8A;
-    --line:#C9D9E8;
+    --ink:#17233f; --blue:#4AA8E0; --sun:#FFD34D; --mint:#2FBF71;
+    --coral:#FF7A6B; --muted:#5A6B8A; --line:#C9D9E8; --violet:#7A6FF0;
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
@@ -28,82 +22,136 @@
       radial-gradient(900px 500px at 8% -10%, #D9F1FF 0%, rgba(217,241,255,0) 60%),
       radial-gradient(800px 460px at 100% 0%, #FFF0D2 0%, rgba(255,240,210,0) 55%),
       #F4FBFF;
-    min-height:100vh;
-    -webkit-font-smoothing:antialiased;
-    overflow-x:hidden;
+    min-height:100vh; -webkit-font-smoothing:antialiased; overflow-x:hidden;
   }
-  button{font-family:inherit}
+  button{font-family:inherit; color:inherit}
   .hidden{display:none !important}
   :focus-visible{outline:3px solid #1565D8;outline-offset:3px}
 
   /* ---------- top bar ---------- */
   .topbar{
-    position:sticky; top:0; z-index:30;
+    position:sticky; top:0; z-index:40;
     display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between;
-    padding:12px 18px;
-    background:rgba(255,255,255,.9);
-    backdrop-filter:blur(10px);
-    border-bottom:3px solid var(--ink);
+    padding:11px 18px; background:rgba(255,255,255,.92);
+    backdrop-filter:blur(10px); border-bottom:3px solid var(--ink);
   }
   .brand{display:flex; align-items:center; gap:12px; min-width:0}
-  .brand-emoji{font-size:34px; line-height:1; filter:drop-shadow(0 3px 0 rgba(0,0,0,.12))}
-  .brand h1{font-size:21px; margin:0; letter-spacing:-.3px}
-  .brand p{margin:0; font-size:12px; color:var(--muted); font-weight:700}
-  .top-actions{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+  .brand-emoji{font-size:32px; line-height:1; filter:drop-shadow(0 3px 0 rgba(0,0,0,.12))}
+  .brand h1{font-size:20px; margin:0; letter-spacing:-.3px}
+  .brand p{margin:0; font-size:11.5px; color:var(--muted); font-weight:700}
+  .top-actions{display:flex; align-items:center; gap:9px; flex-wrap:wrap}
   .stars{
-    display:flex; align-items:center; gap:6px;
-    font-weight:900; font-size:16px;
+    display:flex; align-items:center; gap:6px; font-weight:900; font-size:16px;
     background:#FFF6D6; border:2px solid var(--ink); border-radius:999px;
     padding:5px 14px; box-shadow:0 3px 0 var(--ink);
   }
   .stars.bump{animation:matchPop .4s}
-  .wordcount{
-    font-weight:900; font-size:13px; color:var(--ink);
-    background:#E7F6FF; border:2px solid var(--ink); border-radius:999px;
-    padding:6px 13px; box-shadow:0 3px 0 var(--ink); cursor:pointer;
+  .pill-btn{
+    font-weight:900; font-size:13px; background:#E7F6FF; border:2px solid var(--ink);
+    border-radius:999px; padding:7px 14px; box-shadow:0 3px 0 var(--ink); cursor:pointer;
   }
-  .wordcount:active{transform:translateY(3px); box-shadow:none}
+  .pill-btn:active{transform:translateY(3px); box-shadow:none}
   .icon-btn{
-    font-size:20px; background:#fff; border:2px solid var(--ink); border-radius:999px;
+    font-size:19px; background:#fff; border:2px solid var(--ink); border-radius:999px;
     width:44px; height:40px; cursor:pointer; box-shadow:0 3px 0 var(--ink);
   }
   .icon-btn:active{transform:translateY(3px); box-shadow:none}
 
-  /* ---------- vocabulary chooser ---------- */
-  .vocab{max-width:1100px; margin:14px auto 0; padding:0 18px; scroll-margin-top:90px}
-  .vocab-inner{
-    background:#fff; border:3px solid var(--ink); border-radius:22px;
-    box-shadow:0 5px 0 rgba(23,35,63,.16); padding:14px 16px;
+  /* ---------- vocabulary strip ---------- */
+  .wordstrip{
+    max-width:1100px; margin:12px auto 0; padding:0 18px;
+    display:flex; gap:8px; flex-wrap:wrap; align-items:center;
   }
-  .vocab-top{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap}
-  .kicker{margin:0 0 2px; font-size:11px; letter-spacing:.14em; text-transform:uppercase; font-weight:900; color:var(--blue)}
-  .vocab-title{margin:0; font-size:19px; letter-spacing:-.3px}
-  .vocab-toggle{
-    font-weight:900; font-size:13px; padding:7px 14px; border-radius:999px;
+  .strip-label{font-size:11px; font-weight:900; letter-spacing:.12em; text-transform:uppercase; color:var(--muted)}
+  .strip-btn{
+    display:flex; align-items:center; gap:6px; font-weight:900; font-size:12.5px;
+    background:#fff; border:2px solid var(--line); border-radius:999px;
+    padding:5px 11px; cursor:pointer;
+  }
+  .strip-btn:hover{border-color:var(--blue)}
+  .strip-btn.any{border-color:var(--ink); background:#EAF7FF}
+  .strip-btn b{font-variant-numeric:tabular-nums}
+
+  /* ---------- settings overlay ---------- */
+  .overlay{
+    position:fixed; inset:0; z-index:70; background:rgba(14,24,44,.45);
+    display:flex; align-items:flex-start; justify-content:center;
+    padding:16px; overflow:auto; backdrop-filter:blur(3px);
+  }
+  .sheet{
+    background:#F7FBFF; border:3px solid var(--ink); border-radius:24px;
+    max-width:780px; width:100%; margin:auto;
+    box-shadow:0 12px 0 rgba(23,35,63,.25); animation:fadeUp .2s ease;
+  }
+  .sheet-head{
+    position:sticky; top:0; z-index:2; display:flex; align-items:center; gap:12px;
+    justify-content:space-between; padding:14px 18px;
+    background:#fff; border-bottom:3px solid var(--ink); border-radius:21px 21px 0 0;
+  }
+  .kicker{margin:0 0 2px; font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; font-weight:900; color:var(--blue)}
+  .sheet-head h2{margin:0; font-size:20px; letter-spacing:-.3px}
+  .sheet-body{padding:16px 18px 24px}
+  .done-btn{
+    font-weight:900; font-size:14px; padding:9px 18px; border-radius:999px;
+    border:3px solid var(--ink); background:var(--mint); color:#fff;
+    box-shadow:0 3px 0 var(--ink); cursor:pointer;
+  }
+  .done-btn:active{transform:translateY(3px); box-shadow:none}
+
+  .preset-box{
+    background:#fff; border:3px solid var(--ink); border-radius:18px;
+    padding:12px 14px; margin-bottom:14px; box-shadow:0 4px 0 rgba(23,35,63,.14);
+  }
+  .preset-box h3{margin:0 0 2px; font-size:15px}
+  .preset-box p{margin:0 0 10px; font-size:12.5px; font-weight:700; color:var(--muted)}
+  .preset-row{display:flex; gap:8px; flex-wrap:wrap}
+  .preset{
+    font-weight:900; font-size:13px; padding:8px 14px; border-radius:999px;
     border:2px solid var(--ink); background:#F1F7FC; box-shadow:0 3px 0 var(--ink); cursor:pointer;
   }
-  .vocab-toggle:active{transform:translateY(3px); box-shadow:none}
-  .pack-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(238px,1fr)); gap:10px; margin-top:12px}
-  .pack{
-    display:flex; align-items:center; gap:10px; text-align:left;
-    padding:10px 12px; border-radius:16px; border:3px solid var(--line);
-    background:#F7FBFF; cursor:pointer; transition:.15s; color:inherit;
+  .preset:hover{background:#E3F2FF}
+  .preset:active{transform:translateY(3px); box-shadow:none}
+  .preset.primary{background:var(--sun)}
+
+  .acc{border:3px solid var(--line); border-radius:18px; background:#fff; margin-bottom:10px; overflow:hidden}
+  .acc.open{border-color:var(--ink); box-shadow:0 4px 0 rgba(23,35,63,.13)}
+  .acc-head{
+    display:flex; align-items:center; gap:10px; width:100%; padding:12px 14px;
+    background:none; border:0; cursor:pointer; text-align:left;
   }
-  .pack:hover{border-color:var(--blue); transform:translateY(-2px)}
-  .pack.on{border-color:var(--ink); background:#EAF7FF; box-shadow:0 3px 0 rgba(23,35,63,.15)}
-  .pack-emoji{font-size:24px; line-height:1; flex:none}
-  .pack-text{display:flex; flex-direction:column; flex:1; min-width:0}
-  .pack-text strong{font-size:14.5px}
-  .pack-text em{font-style:normal; font-size:11.5px; color:var(--muted); font-weight:700; line-height:1.35}
-  .pack-check{
-    width:26px; height:26px; border-radius:50%; flex:none;
-    border:2px solid var(--line); background:#fff; display:grid; place-items:center;
-    font-size:15px; font-weight:900; color:transparent;
+  .acc-emoji{font-size:22px; line-height:1}
+  .acc-title{flex:1; min-width:0}
+  .acc-title strong{display:block; font-size:15px}
+  .acc-title em{font-style:normal; font-size:11.5px; color:var(--muted); font-weight:700}
+  .acc-count{
+    font-weight:900; font-size:11.5px; background:#EFF6FC; border:2px solid var(--line);
+    border-radius:999px; padding:2px 9px; white-space:nowrap;
   }
-  .pack.on .pack-check{background:var(--mint); border-color:var(--ink); color:#fff}
-  .vocab-note{margin:10px 2px 0; font-size:12.5px; font-weight:700; color:var(--muted)}
-  .vocab-inner.collapsed .pack-grid,
-  .vocab-inner.collapsed .vocab-note{display:none}
+  .acc-count.any{background:#DCF3E4; border-color:var(--mint)}
+  .acc-chev{font-size:13px; color:var(--muted); transition:transform .2s}
+  .acc.open .acc-chev{transform:rotate(180deg)}
+  .acc-body{display:none; padding:0 14px 14px}
+  .acc.open .acc-body{display:block}
+  .acc-tools{display:flex; gap:6px; margin-bottom:9px}
+  .mini{
+    font-weight:900; font-size:11px; padding:4px 10px; border-radius:999px;
+    border:2px solid var(--line); background:#fff; cursor:pointer;
+  }
+  .mini:hover{border-color:var(--ink)}
+  .chipwrap{display:flex; flex-wrap:wrap; gap:7px}
+  .wchip{
+    display:flex; align-items:center; gap:7px; font-weight:900; font-size:13px;
+    padding:6px 11px 6px 8px; border-radius:999px; border:2px solid var(--line);
+    background:#fff; cursor:pointer; transition:.12s;
+  }
+  .wchip:hover{border-color:var(--blue)}
+  .wchip.on{border-color:var(--ink); background:#E8F8EE}
+  .wchip .wemoji{font-size:16px; line-height:1}
+  .wchip .wbox{
+    width:16px; height:16px; border-radius:5px; border:2px solid var(--line);
+    display:grid; place-items:center; font-size:11px; color:transparent; background:#fff;
+  }
+  .wchip.on .wbox{background:var(--mint); border-color:var(--ink); color:#fff}
 
   /* ---------- tabs ---------- */
   .tabs{display:flex; gap:8px; padding:14px 18px 0; max-width:1100px; margin:0 auto; flex-wrap:wrap}
@@ -116,7 +164,6 @@
   .tab:active{transform:translateY(3px); box-shadow:0 1px 0 var(--ink)}
   .tab.active{background:var(--sun)}
 
-  /* ---------- panels ---------- */
   main{max-width:1100px; margin:0 auto; padding:18px 18px 70px}
   .panel{display:none}
   .panel.active{display:block; animation:fadeUp .25s ease}
@@ -137,8 +184,8 @@
   .hint{font-size:11px; font-weight:800; color:var(--muted); background:#fff; border:2px dashed var(--line); padding:3px 9px; border-radius:999px}
   .badge-new{font-size:10px; text-transform:uppercase; letter-spacing:.08em; background:#E9DFFF; color:#5B3FD6; border:2px solid #5B3FD6; padding:2px 8px; border-radius:999px}
 
-  /* ---------- learn cards ---------- */
-  .card-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(188px,1fr)); gap:16px}
+  /* ---------- learn ---------- */
+  .card-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(184px,1fr)); gap:16px}
   .learn-card{
     background:#fff; border:3px solid var(--ink); border-radius:20px; padding:0 0 12px;
     box-shadow:0 5px 0 var(--ink); cursor:pointer; text-align:center; overflow:hidden;
@@ -148,13 +195,16 @@
   .learn-card:active{transform:translateY(3px); box-shadow:0 1px 0 var(--ink)}
   .learn-card.pop{animation:pop .32s}
   .learn-card .scene{aspect-ratio:16/10; background:#DFF2FF; border-bottom:2px dashed var(--line)}
-  .learn-word{font-size:19px; font-weight:900; margin:10px 6px 2px; display:flex; gap:6px; align-items:center; justify-content:center}
-  .learn-sentence{font-size:13.5px; color:var(--muted); font-weight:800}
+  .learn-word{font-size:18px; font-weight:900; margin:10px 6px 2px; display:flex; gap:6px; align-items:center; justify-content:center}
+  .learn-sentence{font-size:13px; color:var(--muted); font-weight:800}
   .nature-stage{
     height:104px; display:flex; align-items:center; justify-content:center; gap:2px;
     font-size:32px; background:#F2FBF5; border-bottom:2px dashed #D7E8DE; padding:0 6px;
   }
-  .nature-stage.plural{font-size:26px}
+  .empty-note{
+    background:#FFF6D6; border:3px dashed var(--ink); border-radius:18px;
+    padding:16px; font-weight:800; color:var(--muted); font-size:14px;
+  }
 
   /* ---------- games ---------- */
   .game-nav{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px}
@@ -168,8 +218,9 @@
   .game.active{display:block; animation:fadeUp .25s ease}
   .game-head{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; margin-bottom:10px}
   .game-head h2{margin:0; font-size:22px}
-  .game-head p{margin:0; color:var(--muted); font-weight:700; font-size:14px; flex:1; min-width:180px}
-  .score-pill{font-weight:900; font-size:14px; background:#FFF6D6; border:2px solid var(--ink); border-radius:999px; padding:3px 12px}
+  .game-head p{margin:0; color:var(--muted); font-weight:700; font-size:14px; flex:1; min-width:170px}
+  .score-pill{font-weight:900; font-size:13px; background:#FFF6D6; border:2px solid var(--ink); border-radius:999px; padding:3px 12px}
+  .score-pill.pop{animation:matchPop .35s}
 
   .btn{
     font-weight:900; font-size:16px; padding:12px 20px; border-radius:16px;
@@ -181,9 +232,9 @@
   .btn.primary{background:var(--sun)}
   .btn.blue{background:#BFE3FF}
 
-  /* quiz */
-  .quiz-prompt{display:flex; align-items:center; gap:12px; margin:6px 0 16px}
-  .quiz-prompt #quizWord{font-size:clamp(26px,5vw,36px); font-weight:900}
+  .quiz-prompt{display:flex; align-items:center; gap:12px; margin:6px 0 16px; flex-wrap:wrap}
+  .quiz-prompt #quizWord,
+  .quiz-prompt #qdWord{font-size:clamp(26px,5vw,36px); font-weight:900}
   .speaker{
     font-size:22px; width:52px; height:52px; border-radius:50%;
     border:3px solid var(--ink); background:#fff; box-shadow:0 3px 0 var(--ink); cursor:pointer; flex:none;
@@ -200,12 +251,28 @@
   .opt.shake{animation:shake .35s}
   .opt:disabled{cursor:default}
 
+  .combo{
+    font-weight:900; font-size:13px; background:#FFE9A8; border:2px solid var(--ink);
+    border-radius:999px; padding:3px 11px; opacity:0; transition:.2s;
+  }
+  .combo.on{opacity:1; animation:matchPop .35s}
+
+  /* quick draw */
+  .qd-bar{height:16px; border:3px solid var(--ink); border-radius:999px; background:#EFF6FC; overflow:hidden; margin-bottom:14px}
+  .qd-fill{display:block; height:100%; width:100%; background:linear-gradient(90deg,#7EE3A6,#FFD34D,#FF7A6B); transition:width .1s linear}
+  .qd-options{display:grid; grid-template-columns:repeat(2,1fr); gap:10px; max-width:520px}
+  .qd-btn{
+    font-weight:900; font-size:17px; padding:14px; border-radius:16px;
+    border:3px solid var(--line); background:#F7FBFF; cursor:pointer;
+  }
+  .qd-btn:hover{border-color:var(--blue)}
+  .qd-btn.right{background:#D9F8E3; border-color:var(--mint)}
+  .qd-btn.wrong{background:#FFE2DF; border-color:var(--coral); animation:shake .3s}
+  .qd-reveal{color:var(--coral)}
+
   /* memory */
   .mem-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; max-width:560px}
-  .mem-card{
-    position:relative; aspect-ratio:3/4; padding:0; border:none; background:transparent;
-    cursor:pointer; perspective:900px;
-  }
+  .mem-card{position:relative; aspect-ratio:3/4; padding:0; border:none; background:transparent; cursor:pointer; perspective:900px}
   .mem-inner{position:absolute; inset:0; display:block; transform-style:preserve-3d; transition:transform .45s cubic-bezier(.4,.2,.2,1)}
   .mem-card.flipped .mem-inner{transform:rotateY(180deg)}
   .mem-face{
@@ -213,21 +280,20 @@
     border-radius:14px; border:3px solid var(--ink); backface-visibility:hidden; padding:4px; text-align:center;
   }
   .mem-back{background:linear-gradient(135deg,#7FB8FF,#4A8FE0); color:#fff; font-size:26px; font-weight:900}
-  .mem-front{background:#fff; transform:rotateY(180deg); font-weight:900; font-size:15px; line-height:1.1}
+  .mem-front{background:#fff; transform:rotateY(180deg); font-weight:900; font-size:14px; line-height:1.1}
   .mem-front .mem-emoji{font-size:30px}
   .mem-card.matched .mem-front{background:#D9F8E3}
   .mem-card.matched{animation:matchPop .35s}
 
   /* spin */
-  .spin-stage{
-    max-width:430px; margin:0 auto 14px; border:3px solid var(--ink); border-radius:20px;
-    overflow:hidden; background:#DFF2FF;
-  }
+  .spin-stage{max-width:430px; margin:0 auto 14px; border:3px solid var(--ink); border-radius:20px; overflow:hidden; background:#DFF2FF}
   .spin-actions{display:flex; gap:10px; flex-wrap:wrap; justify-content:center}
-  .spin-sentence{
-    text-align:center; font-size:clamp(22px,4vw,30px); font-weight:900; margin:16px 0 4px;
+  .spin-sentence{text-align:center; font-size:clamp(22px,4vw,30px); font-weight:900; margin:16px 0 4px}
+  .challenge{
+    text-align:center; font-weight:900; font-size:15px; color:#5B3FD6;
+    background:#F0EBFF; border:2px dashed #7A6FF0; border-radius:14px;
+    padding:8px 12px; margin:0 auto 12px; max-width:430px;
   }
-  .spin-sentence .big-emoji{font-size:1.1em}
 
   /* detective */
   .clue-card{
@@ -237,17 +303,17 @@
     margin-bottom:16px; box-shadow:0 4px 0 rgba(23,35,63,.14);
   }
   .clue-body{flex:1; min-width:150px}
-  .clue-kicker{margin:0; font-size:11px; font-weight:900; letter-spacing:.14em; text-transform:uppercase; color:var(--muted)}
-  .clue-text{margin:4px 0 0; font-size:clamp(18px,3vw,24px); font-weight:900; line-height:1.3}
+  .clue-kicker{margin:0; font-size:10.5px; font-weight:900; letter-spacing:.14em; text-transform:uppercase; color:var(--muted)}
+  .clue-text{margin:4px 0 0; font-size:clamp(17px,3vw,23px); font-weight:900; line-height:1.3}
   .clue-emoji{font-size:clamp(42px,8vw,62px); line-height:1}
   .det-options{display:grid; grid-template-columns:repeat(2,1fr); gap:12px; max-width:640px}
   .det-opt{
-    display:flex; align-items:center; gap:10px; font-weight:900; font-size:17px;
+    display:flex; align-items:center; gap:10px; font-weight:900; font-size:16px;
     padding:12px 16px; border-radius:16px; border:3px solid var(--line); background:#F7FBFF;
     cursor:pointer; text-align:left; transition:.15s;
   }
   .det-opt:hover{border-color:var(--blue); transform:translateY(-2px)}
-  .det-opt .emoji{font-size:26px}
+  .det-opt .emoji{font-size:24px}
   .det-opt.right{border-color:var(--mint); background:#D9F8E3; box-shadow:0 0 0 4px #B6F0CD}
   .det-opt.wrong{opacity:.45; border-color:var(--coral); background:#FFE2DF}
   .det-opt.shake{animation:shake .35s}
@@ -257,15 +323,15 @@
   .wd-layout{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.15fr); gap:18px; align-items:start}
   .wd-scene{border:3px solid var(--ink); border-radius:18px; overflow:hidden; background:#DFF2FF; box-shadow:0 4px 0 rgba(23,35,63,.14)}
   .wd-scene svg{display:block; width:100%; height:auto}
-  .wd-weather{font-size:clamp(22px,3.4vw,28px); font-weight:900; margin:0 0 2px}
+  .wd-weather{font-size:clamp(21px,3.4vw,27px); font-weight:900; margin:0 0 2px}
   .wd-help{margin:0 0 12px; color:var(--muted); font-weight:800; font-size:14px}
   .wd-items{display:grid; grid-template-columns:repeat(3,1fr); gap:10px}
   .wd-item{
     display:flex; flex-direction:column; align-items:center; gap:4px;
     padding:10px 6px; border-radius:14px; border:3px solid var(--line); background:#fff;
-    cursor:pointer; font-weight:900; font-size:12.5px; line-height:1.15; transition:.15s;
+    cursor:pointer; font-weight:900; font-size:12px; line-height:1.15; transition:.15s;
   }
-  .wd-item .emoji{font-size:30px; line-height:1}
+  .wd-item .emoji{font-size:28px; line-height:1}
   .wd-item:hover{border-color:var(--blue); transform:translateY(-2px)}
   .wd-item.picked{border-color:var(--ink); background:#FFF6D6; box-shadow:0 0 0 3px #FFE9A8}
   .wd-item.right{border-color:var(--mint); background:#D9F8E3; box-shadow:0 0 0 3px #B6F0CD}
@@ -279,9 +345,8 @@
   .om-emojis{font-size:clamp(34px,8vw,54px); letter-spacing:6px; text-align:center; line-height:1.3}
   .om-options{display:flex; gap:14px; flex-wrap:wrap; justify-content:center}
   .om-btn{
-    font-weight:900; font-size:20px; padding:16px 28px; border-radius:18px;
-    border:3px solid var(--ink); background:#fff; box-shadow:0 5px 0 var(--ink); cursor:pointer;
-    min-width:150px;
+    font-weight:900; font-size:19px; padding:16px 26px; border-radius:18px;
+    border:3px solid var(--ink); background:#fff; box-shadow:0 5px 0 var(--ink); cursor:pointer; min-width:145px;
   }
   .om-btn:active{transform:translateY(4px); box-shadow:none}
   .om-btn.right{background:#CDF5DA; border-color:var(--mint)}
@@ -291,71 +356,91 @@
   .game-done{text-align:center; padding:18px 8px 6px}
   .done-emoji{font-size:52px; line-height:1}
   .game-done p{font-size:18px; font-weight:800; margin:8px 0 14px}
+  .best-note{display:block; font-size:13px; color:var(--muted); font-weight:800; margin-top:-6px}
 
   /* ---------- chat ---------- */
+  .chat-toolbar{
+    max-width:560px; margin:0 auto 10px; display:flex; gap:8px;
+    justify-content:flex-end; flex-wrap:wrap;
+  }
+  .chat-toggle{
+    display:flex; align-items:center; gap:6px; font-weight:900; font-size:12.5px;
+    padding:7px 13px; border-radius:999px; border:2px solid var(--ink);
+    background:#E8F8EE; box-shadow:0 3px 0 var(--ink); cursor:pointer;
+  }
+  .chat-toggle:active{transform:translateY(3px); box-shadow:none}
+  .chat-toggle.off{
+    background:#F1F5FA; color:var(--muted); border-style:dashed; box-shadow:none;
+  }
+
   .phone{
     max-width:560px; margin:0 auto; background:#E9F1F7;
     border:3px solid var(--ink); border-radius:26px; overflow:hidden;
     box-shadow:0 8px 0 rgba(23,35,63,.22); display:flex; flex-direction:column;
   }
-  .chat-head{
-    display:flex; align-items:center; gap:12px; padding:10px 14px;
-    background:#fff; border-bottom:3px solid var(--ink);
-  }
-  .avatar{
-    width:46px; height:46px; border-radius:50%; display:grid; place-items:center;
-    font-size:24px; background:#FFE9B8; border:2px solid var(--ink); flex:none;
-  }
+  .chat-head{display:flex; align-items:center; gap:12px; padding:10px 14px; background:#fff; border-bottom:3px solid var(--ink)}
+  .avatar{width:46px; height:46px; border-radius:50%; display:grid; place-items:center; font-size:24px; background:#FFE9B8; border:2px solid var(--ink); flex:none}
   .who{display:flex; flex-direction:column; line-height:1.2; flex:1; min-width:0}
   .who strong{font-size:16px}
   .who span{font-size:11.5px; color:var(--muted); font-weight:700}
+  .streak-badge{
+    font-weight:900; font-size:13px; background:#FFE9A8; border:2px solid var(--ink);
+    border-radius:999px; padding:3px 10px; white-space:nowrap;
+  }
+  .streak-badge.hot{background:#FFD0C4; animation:matchPop .4s}
   .restart{
-    font-size:18px; width:38px; height:38px; border-radius:50%;
+    font-size:18px; width:36px; height:36px; border-radius:50%;
     border:2px solid var(--ink); background:#fff; box-shadow:0 3px 0 var(--ink); cursor:pointer;
   }
   .restart:active{transform:translateY(3px); box-shadow:none}
   .messages{
-    height:clamp(300px,50vh,470px); overflow-y:auto; padding:16px;
-    display:flex; flex-direction:column; gap:10px;
-    background:linear-gradient(#EAF3F8,#DCEAF3);
-    scroll-behavior:smooth;
+    height:clamp(320px,52vh,480px); overflow-y:auto; padding:16px;
+    display:flex; flex-direction:column; gap:9px;
+    background:linear-gradient(#EAF3F8,#DCEAF3); scroll-behavior:smooth;
   }
   .msg{
-    max-width:84%; padding:10px 14px; border-radius:18px; font-size:16px;
-    line-height:1.35; border:2px solid var(--ink);
-    box-shadow:0 3px 0 rgba(23,35,63,.14); animation:pop .2s ease;
+    max-width:85%; padding:10px 14px; border-radius:18px; font-size:16px; line-height:1.35;
+    border:2px solid var(--ink); box-shadow:0 3px 0 rgba(23,35,63,.14); animation:pop .2s ease;
   }
   .msg.mo{background:#fff; align-self:flex-start; border-bottom-left-radius:6px}
   .msg.me{background:#D6F8C8; align-self:flex-end; border-bottom-right-radius:6px}
   .msg.media-only{padding:8px}
   .msg b{font-weight:900}
+  .msg.sticker{background:transparent; border:0; box-shadow:none; padding:0; font-size:52px; line-height:1; align-self:flex-start; animation:stickerPop .45s}
   .attach{margin-top:6px}
   .attach .photo{border:4px solid #fff; border-radius:14px; overflow:hidden; box-shadow:0 3px 10px rgba(23,35,63,.18); background:#DFF2FF}
   .attach svg{display:block; width:100%; height:auto}
   .emoji-tile{
     display:flex; align-items:center; justify-content:center; gap:8px;
-    background:linear-gradient(#EAF7FF,#FFF6E0);
-    border:2px solid var(--ink); border-radius:16px; padding:14px 22px;
+    background:linear-gradient(#EAF7FF,#FFF6E0); border:2px solid var(--ink);
+    border-radius:16px; padding:14px 22px;
   }
-  .emoji-tile .big{font-size:62px; line-height:1}
-  .emoji-tile .small{font-size:26px}
-  .msg.typing{display:flex; gap:5px; padding:13px 16px}
-  .msg.typing span{width:8px; height:8px; border-radius:50%; background:#8FA6BF; animation:blink 1s infinite}
-  .msg.typing span:nth-child(2){animation-delay:.15s}
-  .msg.typing span:nth-child(3){animation-delay:.3s}
+  .emoji-tile .big{font-size:60px; line-height:1}
+  .voice{display:flex; align-items:center; gap:10px; background:#fff; border-radius:14px; padding:8px 10px}
+  .vplay{
+    width:36px; height:36px; border-radius:50%; border:2px solid var(--ink);
+    background:var(--blue); color:#fff; font-size:14px; cursor:pointer; flex:none;
+  }
+  .vwave{display:flex; align-items:center; gap:2px; height:26px; flex:1}
+  .vwave i{display:block; width:3px; border-radius:2px; background:#9FB6CC}
+  .vtime{font-size:11px; font-weight:900; color:var(--muted)}
+  .typing{display:flex; gap:5px; padding:13px 16px}
+  .typing span{width:8px; height:8px; border-radius:50%; background:#8FA6BF; animation:blink 1s infinite}
+  .typing span:nth-child(2){animation-delay:.15s}
+  .typing span:nth-child(3){animation-delay:.3s}
 
-  .wordbank{
-    display:flex; gap:8px; flex-wrap:wrap; padding:10px 12px;
-    background:#F7FBFF; border-top:2px dashed var(--line);
-  }
+  .wordbank{display:flex; gap:7px; flex-wrap:wrap; padding:10px 12px; background:#F7FBFF; border-top:2px dashed var(--line)}
   .chip{
-    font-weight:900; font-size:14px; padding:7px 13px; border-radius:999px;
+    font-weight:900; font-size:13.5px; padding:7px 12px; border-radius:999px;
     border:2px solid var(--ink); background:#fff; box-shadow:0 2px 0 var(--ink); cursor:pointer;
+    transition:opacity .35s ease, transform .35s ease;
   }
   .chip:active{transform:translateY(2px); box-shadow:none}
   .chip.ask{background:#BFE3FF}
-  .chip.soft{background:#F1F5FA; color:var(--muted)}
+  .chip.soft{background:#F1F5FA; color:var(--muted); box-shadow:none; border-style:dashed}
   .chip.wx{background:#FFF6D6}
+  .chip.fun{background:#F0EBFF; border-color:var(--violet)}
+  .chip.gone{opacity:0; transform:scale(.85); pointer-events:none}
 
   .composer{display:flex; gap:8px; padding:12px; background:#fff; border-top:3px solid var(--ink)}
   .composer input{
@@ -372,44 +457,106 @@
   .send.ready{background:var(--mint); animation:sendPulse 1.1s infinite}
   .chat-help{max-width:560px; margin:14px auto 0; text-align:center; color:var(--muted); font-weight:700; font-size:13px}
 
+  /* ---------- page-wide weather layer ---------- */
+  #wxLayer{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    opacity:0; transition:opacity .9s ease; overflow:hidden;
+  }
+  body.wx-on #wxLayer{opacity:1}
+  .wordstrip,.tabs,main{position:relative; z-index:1}
+
+  .wx-sky{position:absolute; inset:0}
+  .wx-p{position:absolute; top:0; display:block}
+  .wx-drop{
+    width:2px; border-radius:2px;
+    background:linear-gradient(180deg,rgba(255,255,255,0) 0%,#CFE8FF 60%,#A8D6F5 100%);
+    animation:wxFall linear infinite;
+  }
+  .wx-flake{width:7px; height:7px; border-radius:50%; background:#fff; opacity:.92; animation:wxFall linear infinite}
+  .wx-hail{width:8px; height:8px; border-radius:50%; background:#fff; border:1px solid #A9C6DC; animation:wxFall linear infinite}
+  .wx-streak{
+    height:4px; border-radius:4px;
+    background:linear-gradient(90deg,rgba(255,255,255,0),#fff);
+    opacity:.8; animation:wxSweep linear infinite;
+  }
+  .wx-cloud{
+    position:absolute; left:0; width:150px; height:52px; border-radius:52px;
+    background:#fff; opacity:.55; animation:wxDrift linear infinite;
+  }
+  .wx-cloud::before,.wx-cloud::after{content:""; position:absolute; background:#fff; border-radius:50%}
+  .wx-cloud::before{width:72px; height:72px; left:16px; top:-34px}
+  .wx-cloud::after{width:52px; height:52px; left:80px; top:-20px}
+  .wx-cloud.dark{background:#8FA4B8; opacity:.45}
+  .wx-cloud.dark::before,.wx-cloud.dark::after{background:#8FA4B8}
+  .wx-sun{
+    position:absolute; top:5%; right:7%; width:240px; height:240px; border-radius:50%;
+    background:radial-gradient(circle,#FFF6C4 0%,#FFD34D 38%,rgba(255,211,77,0) 72%);
+    animation:wxPulse 6s ease-in-out infinite;
+  }
+  .wx-fog{
+    position:absolute; left:-25%; width:150%; height:110px;
+    background:radial-gradient(ellipse at center,rgba(255,255,255,.95),rgba(255,255,255,0) 70%);
+    filter:blur(8px); animation:wxFogDrift linear infinite;
+  }
+  .wx-flash{position:absolute; inset:0; background:#fff; opacity:0; animation:wxFlash 7s infinite}
+  .wx-bow{
+    position:absolute; left:50%; bottom:-2vh; width:min(900px,96vw);
+    transform:translateX(-50%); opacity:.5;
+  }
+
   .float-star{
     position:fixed; z-index:99; transform:translateX(-50%);
     font-weight:900; color:#E8A300; pointer-events:none;
     animation:floatUp 1.15s ease forwards; text-shadow:0 2px 0 #fff;
   }
-  .confetti{
-    position:fixed; top:-30px; z-index:98; pointer-events:none;
-    animation:fall 1.7s linear forwards;
+  .confetti{position:fixed; top:-30px; z-index:98; pointer-events:none; animation:fall 1.7s linear forwards}
+  .toast{
+    position:fixed; left:50%; top:76px; transform:translateX(-50%); z-index:95;
+    background:var(--ink); color:#fff; font-weight:900; font-size:14px;
+    padding:11px 18px; border-radius:999px; box-shadow:0 5px 0 rgba(0,0,0,.25);
+    animation:toastIn .25s ease;
   }
 
   @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
   @keyframes pop{0%{transform:scale(.96)}60%{transform:scale(1.02)}100%{transform:scale(1)}}
   @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
   @keyframes matchPop{0%{transform:scale(1)}50%{transform:scale(1.07)}100%{transform:scale(1)}}
+  @keyframes stickerPop{0%{transform:scale(.4) rotate(-12deg); opacity:0}70%{transform:scale(1.12) rotate(4deg)}100%{transform:scale(1) rotate(0); opacity:1}}
   @keyframes floatUp{0%{opacity:0;transform:translate(-50%,0) scale(.9)}20%{opacity:1}100%{opacity:0;transform:translate(-50%,-70px) scale(1.1)}}
   @keyframes fall{0%{transform:translateY(-10vh) rotate(0)}100%{transform:translateY(108vh) rotate(360deg)}}
   @keyframes sendPulse{0%,100%{box-shadow:0 4px 0 var(--ink)}50%{box-shadow:0 4px 0 var(--ink),0 0 0 7px rgba(47,191,113,.22)}}
   @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  @keyframes toastIn{from{opacity:0;transform:translate(-50%,-10px)}to{opacity:1;transform:translate(-50%,0)}}
   @keyframes blink{0%,60%,100%{opacity:.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
 
-  @media (max-width:720px){
-    .wd-layout{grid-template-columns:1fr}
-  }
+  @keyframes wxFall{from{translate:0 -12vh}to{translate:0 112vh}}
+  @keyframes wxDrift{from{translate:-32vw 0}to{translate:122vw 0}}
+  @keyframes wxFogDrift{0%,100%{translate:-7vw 0}50%{translate:7vw 0}}
+  @keyframes wxSweep{from{translate:-32vw 0}to{translate:122vw 0}}
+  @keyframes wxPulse{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(1.07);opacity:1}}
+  @keyframes wxFlash{0%,88%,100%{opacity:0}90%{opacity:.8}91%{opacity:.1}93%{opacity:.6}95%{opacity:0}}
+
+  @media (max-width:720px){ .wd-layout{grid-template-columns:1fr} }
   @media (max-width:560px){
-    .brand h1{font-size:18px}
+    .brand h1{font-size:17px}
     .brand p{display:none}
     .mem-grid{grid-template-columns:repeat(3,1fr)}
-    .quiz-grid{grid-template-columns:repeat(2,1fr); gap:10px}
+    .quiz-grid,.qd-options{grid-template-columns:repeat(2,1fr); gap:9px}
     .game{padding:14px}
     .msg{max-width:90%}
     .det-options{grid-template-columns:1fr}
+    .sheet{border-radius:20px}
+    .sheet-body{padding:14px}
   }
   @media (prefers-reduced-motion:reduce){
     *{animation-duration:.001s !important; transition-duration:.001s !important}
+    .wx-p,.wx-cloud,.wx-fog,.wx-flash{display:none !important}
   }
 </style>
 </head>
 <body>
+
+<div id="wxLayer" aria-hidden="true"></div>
 
 <header class="topbar">
   <div class="brand">
@@ -421,51 +568,13 @@
   </div>
   <div class="top-actions">
     <div class="stars" id="starBox" title="Stars earned">⭐ <span id="starCount">0</span></div>
-    <button class="wordcount" id="wordCount" type="button" title="Change the words">8 words</button>
+    <button class="pill-btn" id="openSettingsTop" type="button">⚙️ Words</button>
     <button class="icon-btn" id="soundBtn" type="button" aria-pressed="true" title="Sound on/off">🔊</button>
   </div>
 </header>
 
-<section class="vocab" id="vocabBar" aria-labelledby="vocabTitle">
-  <div class="vocab-inner" id="vocabInner">
-    <div class="vocab-top">
-      <div>
-        <p class="kicker">Teacher setup</p>
-        <h2 class="vocab-title" id="vocabTitle">Which words today?</h2>
-      </div>
-      <button class="vocab-toggle" id="vocabToggle" type="button" aria-expanded="true">Hide ▲</button>
-    </div>
-    <div class="pack-grid" id="packGrid">
-      <button class="pack on" data-pack="core" type="button" aria-pressed="true">
-        <span class="pack-emoji" aria-hidden="true">☀️</span>
-        <span class="pack-text">
-          <strong>Weather basics</strong>
-          <em>sunny · rainy · windy · cloudy · snowy · stormy · hot · cold</em>
-        </span>
-        <span class="pack-check" aria-hidden="true">✓</span>
-      </button>
-      <button class="pack" data-pack="nature" type="button" aria-pressed="false">
-        <span class="pack-emoji" aria-hidden="true">🌸</span>
-        <span class="pack-text">
-          <strong>Nature words</strong>
-          <em>a flower · flowers · a tree · trees · a cloud · clouds · a puddle · puddles</em>
-        </span>
-        <span class="pack-check" aria-hidden="true">✓</span>
-      </button>
-      <button class="pack" data-pack="more" type="button" aria-pressed="false">
-        <span class="pack-emoji" aria-hidden="true">🌪️</span>
-        <span class="pack-text">
-          <strong>More weather</strong>
-          <em>foggy · breezy · freezing · boiling · warm · mild · humid · icy · lightning · thunder · hail · drizzling · rainbow</em>
-        </span>
-        <span class="pack-check" aria-hidden="true">✓</span>
-      </button>
-    </div>
-    <p class="vocab-note" id="vocabNote">
-      Tap a set to switch it on or off. Cards, games and Mo update straight away.
-      <b>Weather basics</b> stays on.
-    </p>
-  </div>
+<section class="wordstrip" id="wordStrip" aria-label="Active vocabulary">
+  <span class="strip-label">On today</span>
 </section>
 
 <nav class="tabs" aria-label="Sections">
@@ -479,7 +588,7 @@
   <section class="panel active" id="tab-learn">
     <div class="hero">
       <div>
-        <p class="kicker">Lesson 1 · Weather</p>
+        <p class="kicker">Lesson · Weather</p>
         <h2 class="hero-q">How's the weather?</h2>
         <p class="hero-sub">Tap the speaker, then say it with me. 🗣️</p>
         <button class="btn primary" id="heroSpeak" type="button">🔊 Listen &amp; say it</button>
@@ -492,14 +601,8 @@
       <div class="card-grid" id="weatherGrid"></div>
     </div>
 
-    <div id="moreBlock" class="hidden">
-      <h3 class="section-title">More weather <span class="badge-new">extra</span></h3>
-      <p class="section-sub">For later lessons — listen, point and repeat. 👂</p>
-      <div class="card-grid" id="moreGrid"></div>
-    </div>
-
     <div id="natureBlock" class="hidden">
-      <h3 class="section-title">Nature words <span class="badge-new">next lesson</span></h3>
+      <h3 class="section-title">Nature words <span class="badge-new">extra</span></h3>
       <p class="section-sub">One or many? Tap and listen. 👂</p>
       <div class="card-grid" id="natureGrid"></div>
     </div>
@@ -509,6 +612,7 @@
   <section class="panel" id="tab-games">
     <div class="game-nav">
       <button class="game-chip active" data-game="quiz" type="button">👆 Tap it!</button>
+      <button class="game-chip" data-game="quick" type="button">⚡ Quick Draw</button>
       <button class="game-chip" data-game="memory" type="button">🃏 Memory</button>
       <button class="game-chip" data-game="spin" type="button">🎡 Spin &amp; Say</button>
       <button class="game-chip" data-game="detective" type="button">🕵️ Detective</button>
@@ -521,6 +625,7 @@
       <div class="game-head">
         <h2>Tap it! 👆</h2>
         <p>Listen to the word, then tap the matching picture.</p>
+        <span class="combo" id="quizCombo">🔥 x2</span>
         <span class="score-pill" id="quizScore">0 / 8</span>
       </div>
       <div class="quiz-prompt">
@@ -531,7 +636,32 @@
       <div class="game-done hidden" id="quizDone">
         <div class="done-emoji">🏆</div>
         <p id="quizDoneText">Great job!</p>
+        <span class="best-note" id="quizBest"></span>
         <button class="btn primary" id="quizAgain" type="button">Play again</button>
+      </div>
+    </div>
+
+    <!-- quick draw -->
+    <div class="game" id="game-quick">
+      <div class="game-head">
+        <h2>Quick Draw ⚡</h2>
+        <p>Listen and tap the word. 45 seconds!</p>
+        <span class="combo" id="qdCombo">🔥 x2</span>
+        <span class="score-pill" id="qdScore">0 points</span>
+      </div>
+      <div id="qdPlay">
+        <div class="qd-bar"><span class="qd-fill" id="qdFill"></span></div>
+        <div class="quiz-prompt">
+          <button class="speaker" id="qdHear" type="button" aria-label="Listen again">🔊</button>
+          <span id="qdWord" aria-live="polite">?</span>
+        </div>
+        <div class="qd-options" id="qdOptions"></div>
+      </div>
+      <div class="game-done hidden" id="qdDone">
+        <div class="done-emoji">⚡</div>
+        <p id="qdDoneText">Time!</p>
+        <span class="best-note" id="qdBest"></span>
+        <button class="btn primary" id="qdAgain" type="button">Go again</button>
       </div>
     </div>
 
@@ -546,6 +676,7 @@
       <div class="game-done hidden" id="memDone">
         <div class="done-emoji">🎉</div>
         <p id="memDoneText">You found them all!</p>
+        <span class="best-note" id="memBest"></span>
         <button class="btn primary" id="memAgain" type="button">Play again</button>
       </div>
     </div>
@@ -554,9 +685,10 @@
     <div class="game" id="game-spin">
       <div class="game-head">
         <h2>Spin &amp; Say 🎡</h2>
-        <p>Spin, look, and say the sentence out loud!</p>
+        <p>Spin, look, and do the challenge!</p>
       </div>
       <div class="spin-stage" id="spinStage"></div>
+      <p class="challenge hidden" id="spinChallenge">Say it loudly! 📣</p>
       <div class="spin-actions">
         <button class="btn primary" id="spinBtn" type="button">Spin! 🎡</button>
         <button class="btn" id="spinHear" type="button">🔊 Hear it</button>
@@ -630,13 +762,23 @@
 
   <!-- ============ CHAT ============ -->
   <section class="panel" id="tab-chat">
+    <div class="chat-toolbar">
+      <button class="chat-toggle" id="bgToggle" type="button" aria-pressed="true">
+        🌈 Background: on
+      </button>
+      <button class="chat-toggle" id="voiceToggle" type="button" aria-pressed="true">
+        🔊 Voice notes: on
+      </button>
+    </div>
+
     <div class="phone">
       <div class="chat-head">
         <div class="avatar" aria-hidden="true">🐻</div>
         <div class="who">
           <strong>Mo</strong>
-          <span>online · your weather buddy</span>
+          <span id="moStatus">online · your weather buddy</span>
         </div>
+        <span class="streak-badge" id="chatStreak">🔥 0</span>
         <button class="restart" id="chatRestart" type="button" aria-label="Start the chat again" title="Start again">⟳</button>
       </div>
       <div class="messages" id="messages" aria-live="polite"></div>
@@ -646,41 +788,61 @@
         <button class="send" type="submit">Send</button>
       </form>
     </div>
-    <p class="chat-help">Tap a chip, then press <b>Send</b> — or type on the keyboard and press Enter.</p>
+    <p class="chat-help">Tap a chip, then press <b>Send</b> — or type and press Enter.</p>
   </section>
 </main>
 
+<!-- ============ SETTINGS OVERLAY ============ -->
+<div class="overlay hidden" id="settingsOverlay">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="setTitle">
+    <div class="sheet-head">
+      <div>
+        <p class="kicker">Teacher setup</p>
+        <h2 id="setTitle">Words &amp; settings</h2>
+      </div>
+      <button class="done-btn" id="closeSettings" type="button">Done ✓</button>
+    </div>
+    <div class="sheet-body">
+      <div class="preset-box">
+        <h3>⚡ Quick presets</h3>
+        <p>Pick a starting point, then fine-tune below.</p>
+        <div class="preset-row" id="presetRow"></div>
+      </div>
+      <div id="accWrap"></div>
+      <p class="hint" style="display:block;padding:10px 12px;border-radius:14px;line-height:1.5">
+        Changes apply instantly to the cards, all games and Mo's chat. Games need at least
+        <b>4 weather words</b> switched on.
+      </p>
+    </div>
+  </div>
+</div>
+
 <script>
 /* =========================================================
-   1. Small helpers
+   1. Helpers
    ========================================================= */
-const $  = (s, root = document) => root.querySelector(s);
-const $$ = (s, root = document) => Array.from(root.querySelectorAll(s));
+const $  = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 const rnd = a => a[Math.floor(Math.random() * a.length)];
 const wait = ms => new Promise(r => setTimeout(r, ms));
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
 const esc = s => String(s).replace(/[&<>"']/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-function shuffle(arr) {
-  const a = arr.slice();
-  for (let i = a.length - 1; i > 0; i--) {
+function shuffle(a) {
+  const b = a.slice();
+  for (let i = b.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
+    [b[i], b[j]] = [b[j], b[i]];
   }
-  return a;
+  return b;
 }
-
-/* text normaliser: lower-case, no apostrophes, letters and spaces only */
 function norm(s) {
-  return String(s)
-    .toLowerCase()
+  return String(s).toLowerCase()
     .replace(/[’‘`´']/g, '')
     .replace(/[^a-z ]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
+    .replace(/\s+/g, ' ').trim();
 }
-
 function lev(a, b) {
   const m = a.length, n = b.length;
   if (!m) return n;
@@ -696,59 +858,119 @@ function lev(a, b) {
   }
   return prev[n];
 }
+const store = {
+  get(k, d) { try { const v = localStorage.getItem('wt_' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem('wt_' + k, JSON.stringify(v)); } catch (e) {} }
+};
 
 /* =========================================================
-   2. Word data
+   2. Vocabulary data
    ========================================================= */
-const CORE_WORDS = [
-  { id: 'sunny',  word: 'Sunny',  emoji: '☀️', ex: "It's sunny.",  kind: 'adj', groups: ['sun', 'heat'] },
-  { id: 'rainy',  word: 'Rainy',  emoji: '🌧️', ex: "It's rainy.",  kind: 'adj', groups: ['rain'] },
-  { id: 'windy',  word: 'Windy',  emoji: '🌬️', ex: "It's windy.",  kind: 'adj', groups: ['wind'] },
-  { id: 'cloudy', word: 'Cloudy', emoji: '☁️', ex: "It's cloudy.", kind: 'adj', groups: ['cloud'] },
-  { id: 'snowy',  word: 'Snowy',  emoji: '❄️', ex: "It's snowy.",  kind: 'adj', groups: ['cold', 'cloud'] },
-  { id: 'stormy', word: 'Stormy', emoji: '⛈️', ex: "It's stormy.", kind: 'adj', groups: ['storm', 'rain', 'cloud'] },
-  { id: 'hot',    word: 'Hot',    emoji: '🥵', ex: "It's hot.",    kind: 'adj', groups: ['heat', 'sun'], temp: true },
-  { id: 'cold',   word: 'Cold',   emoji: '🥶', ex: "It's cold.",   kind: 'adj', groups: ['cold'], temp: true }
+const WORDS = [
+  { id: 'sunny', w: 'Sunny', e: '☀️', ex: "It's sunny.", cat: 'conditions', kind: 'adj',
+    groups: ['sun', 'heat'], clue: 'The sun is very bright and the sky is blue.' },
+  { id: 'rainy', w: 'Rainy', e: '🌧️', ex: "It's rainy.", cat: 'conditions', kind: 'adj',
+    groups: ['rain'], clue: 'Water is falling from the sky.' },
+  { id: 'windy', w: 'Windy', e: '🌬️', ex: "It's windy.", cat: 'conditions', kind: 'adj',
+    groups: ['wind'], clue: 'The trees are moving a lot.' },
+  { id: 'cloudy', w: 'Cloudy', e: '☁️', ex: "It's cloudy.", cat: 'conditions', kind: 'adj',
+    groups: ['cloud'], clue: 'I cannot see the sun. The sky is full of clouds.' },
+  { id: 'snowy', w: 'Snowy', e: '❄️', ex: "It's snowy.", cat: 'conditions', kind: 'adj',
+    groups: ['cold', 'cloud'], clue: 'White things are falling and everything is white.' },
+  { id: 'stormy', w: 'Stormy', e: '⛈️', ex: "It's stormy.", cat: 'conditions', kind: 'adj',
+    groups: ['storm', 'rain', 'cloud'], clue: 'I hear a big boom and the rain is very strong.' },
+  { id: 'foggy', w: 'Foggy', e: '🌫️', ex: "It's foggy.", cat: 'conditions', kind: 'adj',
+    groups: ['cloud'], clue: 'Everything is white and grey. I cannot see far.' },
+  { id: 'breezy', w: 'Breezy', e: '🍃', ex: "It's breezy.", cat: 'conditions', kind: 'adj',
+    groups: ['wind'], clue: 'A soft wind is blowing on my face.' },
+  { id: 'drizzling', w: 'Drizzling', e: '🌦️', ex: "It's drizzling.", cat: 'conditions', kind: 'adj',
+    groups: ['rain'], clue: 'It is raining, but only a little bit.' },
+
+  { id: 'hot', w: 'Hot', e: '🥵', ex: "It's hot.", cat: 'temperature', kind: 'adj',
+    groups: ['heat'], temp: true, clue: 'I am sweating. I want cold water!' },
+  { id: 'cold', w: 'Cold', e: '🥶', ex: "It's cold.", cat: 'temperature', kind: 'adj',
+    groups: ['cold'], temp: true, clue: 'I need my coat and my scarf!' },
+  { id: 'warm', w: 'Warm', e: '🌤️', ex: "It's warm.", cat: 'temperature', kind: 'adj',
+    groups: ['heat'], temp: true, clue: 'It is nice. I do not need a big coat.' },
+  { id: 'mild', w: 'Mild', e: '🌥️', ex: "It's mild.", cat: 'temperature', kind: 'adj',
+    groups: ['heat'], temp: true, clue: 'It is not very hot and not very cold.' },
+  { id: 'freezing', w: 'Freezing', e: '🧊', ex: "It's freezing.", cat: 'temperature', kind: 'adj',
+    groups: ['cold'], temp: true, clue: 'It is VERY cold. My hands are blue!' },
+  { id: 'boiling', w: 'Boiling', e: '🔥', ex: "It's boiling.", cat: 'temperature', kind: 'adj',
+    groups: ['heat'], temp: true, clue: 'It is VERY hot. I want ice cream!' },
+  { id: 'humid', w: 'Humid', e: '💦', ex: "It's humid.", cat: 'temperature', kind: 'adj',
+    groups: ['heat', 'rain'], temp: true, clue: 'The air is wet and sticky.' },
+  { id: 'icy', w: 'Icy', e: '🧊', ex: "It's icy.", cat: 'temperature', kind: 'adj',
+    groups: ['cold'], temp: true, clue: 'The ground is ice. I must walk slowly.' },
+
+  { id: 'lightning', w: 'Lightning', e: '⚡', ex: 'There is lightning.', cat: 'sky', kind: 'noun',
+    groups: ['storm'], clue: 'I see a bright flash of light in the sky.' },
+  { id: 'thunder', w: 'Thunder', e: '🌩️', ex: 'There is thunder.', cat: 'sky', kind: 'noun',
+    groups: ['storm'], clue: 'I hear a big BOOM in the sky.' },
+  { id: 'hail', w: 'Hail', e: '🌨️', ex: 'There is hail.', cat: 'sky', kind: 'noun',
+    groups: ['storm', 'cold'], clue: 'Little balls of ice are falling from the sky.' },
+  { id: 'rainbow', w: 'Rainbow', e: '🌈', ex: 'There is a rainbow.', cat: 'sky', kind: 'noun',
+    groups: ['rainbow'], clue: 'I see many colours across the sky.' },
+
+  { id: 'n_flower', w: 'a flower', e: '🌸', ex: 'A flower.', cat: 'natureS', kind: 'noun',
+    base: 'flower', groups: ['plant'], clue: 'It is small, pretty and pink.' },
+  { id: 'n_tree', w: 'a tree', e: '🌳', ex: 'A tree.', cat: 'natureS', kind: 'noun',
+    base: 'tree', groups: ['plant'], clue: 'It is very big and green.' },
+  { id: 'n_cloud', w: 'a cloud', e: '☁️', ex: 'A cloud.', cat: 'natureS', kind: 'noun',
+    base: 'cloud', groups: ['cloud'], clue: 'It is white and it is in the sky.' },
+  { id: 'n_puddle', w: 'a puddle', e: '💧', ex: 'A puddle.', cat: 'natureS', kind: 'noun',
+    base: 'puddle', groups: ['rain'], clue: 'It is water on the ground after rain.' },
+
+  { id: 'n_flowerP', w: 'flowers', e: '🌸🌸🌸', ex: 'Flowers.', cat: 'natureP', kind: 'noun',
+    base: 'flower', groups: ['plant'], clue: 'There are three of them. They are pretty.' },
+  { id: 'n_treeP', w: 'trees', e: '🌳🌳🌳', ex: 'Trees.', cat: 'natureP', kind: 'noun',
+    base: 'tree', groups: ['plant'], clue: 'There are many big green plants.' },
+  { id: 'n_cloudP', w: 'clouds', e: '☁️☁️☁️', ex: 'Clouds.', cat: 'natureP', kind: 'noun',
+    base: 'cloud', groups: ['cloud'], clue: 'There are many white things in the sky.' },
+  { id: 'n_puddleP', w: 'puddles', e: '💧💧💧', ex: 'Puddles.', cat: 'natureP', kind: 'noun',
+    base: 'puddle', groups: ['rain'], clue: 'There is water in many places on the ground.' }
 ];
 
-const MORE_WORDS = [
-  { id: 'foggy',     word: 'Foggy',     emoji: '🌫️', ex: "It's foggy.",     kind: 'adj',  groups: ['cloud'] },
-  { id: 'breezy',    word: 'Breezy',    emoji: '🍃', ex: "It's breezy.",    kind: 'adj',  groups: ['wind'] },
-  { id: 'freezing',  word: 'Freezing',  emoji: '🥶', ex: "It's freezing.",  kind: 'adj',  groups: ['cold'], temp: true },
-  { id: 'boiling',   word: 'Boiling',   emoji: '🥵', ex: "It's boiling.",   kind: 'adj',  groups: ['heat'], temp: true },
-  { id: 'warm',      word: 'Warm',      emoji: '🌤️', ex: "It's warm.",      kind: 'adj',  groups: ['heat'], temp: true },
-  { id: 'mild',      word: 'Mild',      emoji: '🌥️', ex: "It's mild.",      kind: 'adj',  groups: ['heat', 'cloud'], temp: true },
-  { id: 'humid',     word: 'Humid',     emoji: '💦', ex: "It's humid.",     kind: 'adj',  groups: ['heat', 'rain'], temp: true },
-  { id: 'icy',       word: 'Icy',       emoji: '🧊', ex: "It's icy.",       kind: 'adj',  groups: ['cold'] },
-  { id: 'lightning', word: 'Lightning', emoji: '⚡', ex: 'There is lightning.', kind: 'noun', groups: ['storm'] },
-  { id: 'thunder',   word: 'Thunder',   emoji: '🌩️', ex: 'There is thunder.',   kind: 'noun', groups: ['storm'] },
-  { id: 'hail',      word: 'Hail',      emoji: '🌨️', ex: 'There is hail.',      kind: 'noun', groups: ['storm', 'cold'] },
-  { id: 'drizzling', word: 'Drizzling', emoji: '🌦️', ex: "It's drizzling.", kind: 'adj',  groups: ['rain'] },
-  { id: 'rainbow',   word: 'Rainbow',   emoji: '🌈', ex: 'There is a rainbow.', kind: 'noun', groups: ['rainbow'] }
+const FRAMES = [
+  { id: 'ask',   label: "How's the weather?", e: '💬', note: 'The key question' },
+  { id: 'its',   label: "It's …",              e: '🌤️', note: 'Answer frame' },
+  { id: 'there', label: 'There is …',          e: '⚡', note: 'For nouns (lightning, hail)' },
+  { id: 'like',  label: 'Yes, I do / No, I don’t', e: '👍', note: 'Follow-up answers' }
 ];
 
-const NATURE = [
-  { id: 'flower', one: 'a flower', many: 'flowers', emoji: '🌸', manyEmoji: '🌸 🌸 🌸' },
-  { id: 'tree',   one: 'a tree',   many: 'trees',   emoji: '🌳', manyEmoji: '🌳 🌳 🌳' },
-  { id: 'cloud',  one: 'a cloud',  many: 'clouds',  emoji: '☁️', manyEmoji: '☁️ ☁️ ☁️' },
-  { id: 'puddle', one: 'a puddle', many: 'puddles', emoji: '💧', manyEmoji: '💧 💧 💧' }
+const CATS = [
+  { id: 'conditions', title: 'Weather conditions', emoji: '🌤️', note: 'sunny, rainy, windy …' },
+  { id: 'temperature', title: 'Temperature', emoji: '🌡️', note: 'hot, cold, warm …' },
+  { id: 'sky', title: 'Sky & storms', emoji: '⚡', note: 'lightning, thunder, hail …' },
+  { id: 'natureS', title: 'Nature — one', emoji: '🌸', note: 'a flower, a tree …' },
+  { id: 'natureP', title: 'Nature — many', emoji: '🌸🌸', note: 'flowers, trees …' },
+  { id: 'frames', title: 'Sentence frames', emoji: '💬', note: 'the words around the weather' }
 ];
 
-const activePacks = new Set(['core']);
-const packOn = p => p === 'core' || activePacks.has(p);
+const PRESETS = [
+  { id: 'starter', label: '🌱 Starter', words: ['sunny', 'rainy', 'windy', 'cloudy', 'snowy', 'stormy', 'hot', 'cold'], frames: ['ask', 'its'] },
+  { id: 'nature',  label: '🌸 + Nature', words: ['sunny', 'rainy', 'windy', 'cloudy', 'snowy', 'stormy', 'hot', 'cold',
+      'n_flower', 'n_tree', 'n_cloud', 'n_puddle', 'n_flowerP', 'n_treeP', 'n_cloudP', 'n_puddleP'], frames: ['ask', 'its'] },
+  { id: 'extras',  label: '🌪️ Full weather', words: null, frames: ['ask', 'its', 'there', 'like'] },
+  { id: 'all',     label: '✅ Everything', words: 'ALL', frames: ['ask', 'its', 'there', 'like'] }
+];
 
-function activeWeatherWords() {
-  return packOn('more') ? CORE_WORDS.concat(MORE_WORDS) : CORE_WORDS.slice();
-}
-function chatWords() {
-  return activeWeatherWords().filter(w => !w.temp);
-}
-function wordTotal() {
-  return activeWeatherWords().length + (packOn('nature') ? 8 : 0);
-}
-function sharesGroup(a, b) {
-  const ga = a.groups || [], gb = b.groups || [];
-  return ga.some(g => gb.includes(g));
+const enabled = new Set(PRESETS[0].words);
+const framesOn = new Set(PRESETS[0].frames);
+
+const isNature = w => w.cat === 'natureS' || w.cat === 'natureP';
+const byId = id => WORDS.find(w => w.id === id);
+const activeWeather = () => WORDS.filter(w => enabled.has(w.id) && !isNature(w));
+const activeNature = () => WORDS.filter(w => enabled.has(w.id) && isNature(w));
+const sharesGroup = (a, b) => (a.groups || []).some(g => (b.groups || []).includes(g));
+const yearCount = () => enabled.size;
+
+function toast(msg) {
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 2200);
 }
 
 /* =========================================================
@@ -756,7 +978,6 @@ function sharesGroup(a, b) {
    ========================================================= */
 let soundOn = true;
 let voice = null;
-
 function pickVoice() {
   if (!('speechSynthesis' in window)) return null;
   const vs = speechSynthesis.getVoices().filter(v => /^en/i.test(v.lang));
@@ -767,13 +988,11 @@ function speak(text, rate = 0.82) {
   try {
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'en-US';
-    u.rate = rate;
-    u.pitch = 1.06;
+    u.lang = 'en-US'; u.rate = rate; u.pitch = 1.06;
     if (!voice) voice = pickVoice();
     if (voice) u.voice = voice;
     speechSynthesis.speak(u);
-  } catch (e) { /* ignore */ }
+  } catch (e) {}
 }
 if ('speechSynthesis' in window) {
   voice = pickVoice();
@@ -785,80 +1004,61 @@ function beep(freq, start, dur, type = 'sine', vol = 0.06) {
   if (!soundOn) return;
   try {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const c = audioCtx;
-    const o = c.createOscillator();
-    const g = c.createGain();
-    o.type = type;
-    o.frequency.value = freq;
-    o.connect(g);
-    g.connect(c.destination);
+    const c = audioCtx, o = c.createOscillator(), g = c.createGain();
+    o.type = type; o.frequency.value = freq;
+    o.connect(g); g.connect(c.destination);
     const t = c.currentTime + start;
     g.gain.setValueAtTime(0.0001, t);
     g.gain.exponentialRampToValueAtTime(vol, t + 0.02);
     g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    o.start(t);
-    o.stop(t + dur + 0.03);
-  } catch (e) { /* ignore */ }
+    o.start(t); o.stop(t + dur + 0.03);
+  } catch (e) {}
 }
 const sfx = {
   correct() { beep(660, 0, .12); beep(880, .09, .16); },
   win()     { [523, 659, 784, 1046].forEach((f, i) => beep(f, i * .09, .18)); },
   wrong()   { beep(250, 0, .14, 'triangle', .05); beep(185, .12, .18, 'triangle', .05); },
   pop()     { beep(720, 0, .08, 'square', .04); },
-  click()   { beep(520, 0, .05, 'sine', .035); }
+  click()   { beep(520, 0, .05, 'sine', .035); },
+  tick()    { beep(900, 0, .04, 'sine', .03); }
 };
 
 /* =========================================================
-   4. SVG illustration toolkit
+   4. SVG toolkit
    ========================================================= */
 let uid = 0;
-
 const SKY = {
-  sunny:     ['#9ADEFF', '#EAFAFF', '#8FDD8A'],
-  cloudy:    ['#B7CBDF', '#F0F6FB', '#A8DBA4'],
-  rainy:     ['#7E94AC', '#C9D7E2', '#7FBF7E'],
-  windy:     ['#A8D3E8', '#EDF8FD', '#9FD79B'],
-  snowy:     ['#A9C6E0', '#F7FBFF', '#FFFFFF'],
-  stormy:    ['#465873', '#93A6BB', '#6F9A6E'],
-  hot:       ['#FFC46B', '#FFE7BE', '#F6C86E'],
-  cold:      ['#BCD6EE', '#F0F9FF', '#FFFFFF'],
-  foggy:     ['#C6D3DC', '#EDF3F7', '#B7CFB9'],
-  breezy:    ['#A8D3E8', '#EFFAFE', '#9FD79B'],
-  freezing:  ['#B7D8F2', '#F4FBFF', '#F3FAFF'],
-  boiling:   ['#FF9B4A', '#FFE0B0', '#EFC98A'],
-  warm:      ['#9FD8FF', '#FFF4DC', '#9FD79B'],
-  mild:      ['#C3E0EE', '#F6FBF6', '#A6D8A2'],
-  humid:     ['#C9DDB6', '#EFF6DC', '#9FCB96'],
-  icy:       ['#CFE9FA', '#F7FDFF', '#FFFFFF'],
-  lightning: ['#39465C', '#8595AA', '#5C7F5C'],
-  thunder:   ['#3E4B60', '#8C9BB0', '#5F8260'],
-  hail:      ['#8FA3B8', '#D6E2EC', '#EAF4FF'],
-  drizzling: ['#9DB6C8', '#DCE8F0', '#8CC48C'],
-  rainbow:   ['#8FD6FF', '#F6FCFF', '#9FD79B']
+  sunny: ['#9ADEFF', '#EAFAFF', '#8FDD8A'], cloudy: ['#B7CBDF', '#F0F6FB', '#A8DBA4'],
+  rainy: ['#7E94AC', '#C9D7E2', '#7FBF7E'], windy: ['#A8D3E8', '#EDF8FD', '#9FD79B'],
+  snowy: ['#A9C6E0', '#F7FBFF', '#FFFFFF'], stormy: ['#465873', '#93A6BB', '#6F9A6E'],
+  hot: ['#FFC46B', '#FFE7BE', '#F6C86E'], cold: ['#BCD6EE', '#F0F9FF', '#FFFFFF'],
+  foggy: ['#C6D3DC', '#EDF3F7', '#B7CFB9'], breezy: ['#A8D3E8', '#EFFAFE', '#9FD79B'],
+  freezing: ['#B7D8F2', '#F4FBFF', '#F3FAFF'], boiling: ['#FF9B4A', '#FFE0B0', '#EFC98A'],
+  warm: ['#9FD8FF', '#FFF4DC', '#9FD79B'], mild: ['#C3E0EE', '#F6FBF6', '#A6D8A2'],
+  humid: ['#C9DDB6', '#EFF6DC', '#9FCB96'], icy: ['#CFE9FA', '#F7FDFF', '#FFFFFF'],
+  lightning: ['#39465C', '#8595AA', '#5C7F5C'], thunder: ['#3E4B60', '#8C9BB0', '#5F8260'],
+  hail: ['#8FA3B8', '#D6E2EC', '#EAF4FF'], drizzling: ['#9DB6C8', '#DCE8F0', '#8CC48C'],
+  rainbow: ['#8FD6FF', '#F6FCFF', '#9FD79B']
 };
+const GROUND = fill => `<path d="M0 168 Q80 150 160 166 T320 162 L320 200 L0 200 Z" fill="${fill}"/>`;
 
 function sunSVG(x, y, r) {
   let rays = '';
   for (let i = 0; i < 8; i++) {
-    const ang = i * Math.PI / 4 + Math.PI / 8;
-    const x1 = (x + Math.cos(ang) * (r + 7)).toFixed(1);
-    const y1 = (y + Math.sin(ang) * (r + 7)).toFixed(1);
-    const x2 = (x + Math.cos(ang) * (r + 17)).toFixed(1);
-    const y2 = (y + Math.sin(ang) * (r + 17)).toFixed(1);
-    rays += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#FFC02E" stroke-width="5" stroke-linecap="round"/>`;
+    const a = i * Math.PI / 4 + Math.PI / 8;
+    rays += `<line x1="${(x + Math.cos(a) * (r + 7)).toFixed(1)}" y1="${(y + Math.sin(a) * (r + 7)).toFixed(1)}"
+      x2="${(x + Math.cos(a) * (r + 17)).toFixed(1)}" y2="${(y + Math.sin(a) * (r + 17)).toFixed(1)}"
+      stroke="#FFC02E" stroke-width="5" stroke-linecap="round"/>`;
   }
   return `<g>${rays}<circle cx="${x}" cy="${y}" r="${r}" fill="#FFD34D" stroke="#FFC02E" stroke-width="3"/></g>`;
 }
-
 function cloudSVG(x, y, s, fill = '#FFFFFF') {
   return `<g transform="translate(${x},${y}) scale(${s})">
     <ellipse cx="0" cy="14" rx="46" ry="16" fill="${fill}"/>
     <circle cx="-22" cy="2" r="20" fill="${fill}"/>
     <circle cx="2" cy="-8" r="26" fill="${fill}"/>
-    <circle cx="28" cy="4" r="18" fill="${fill}"/>
-  </g>`;
+    <circle cx="28" cy="4" r="18" fill="${fill}"/></g>`;
 }
-
 function rainSVG(xs = [92, 118, 146, 172, 198, 224, 250], from = 96) {
   return `<g stroke="#4AA8E0" stroke-width="4" stroke-linecap="round" opacity=".9">` +
     xs.map((x, i) => {
@@ -866,57 +1066,46 @@ function rainSVG(xs = [92, 118, 146, 172, 198, 224, 250], from = 96) {
       return `<line x1="${x}" y1="${y}" x2="${x - 5}" y2="${y + 22}"/>`;
     }).join('') + `</g>`;
 }
-
 function drizzleSVG() {
   const xs = [70, 94, 118, 142, 166, 190, 214, 238, 262];
-  return `<g stroke="#A9CFE2" stroke-width="2" stroke-linecap="round" opacity=".95">` +
+  return `<g stroke="#A9CFE2" stroke-width="2" stroke-linecap="round">` +
     xs.map((x, i) => {
       const y = 88 + (i % 4) * 12;
       return `<line x1="${x}" y1="${y}" x2="${x - 2}" y2="${y + 10}"/>`;
     }).join('') + `</g>`;
 }
-
 function flakesSVG(n = 18) {
   let s = '';
   for (let i = 0; i < n; i++) {
-    const x = 18 + ((i * 53) % 286);
-    const y = 80 + ((i * 61) % 92);
-    const r = 2 + (i % 3);
+    const x = 18 + ((i * 53) % 286), y = 80 + ((i * 61) % 92), r = 2 + (i % 3);
     s += `<circle cx="${x}" cy="${y}" r="${r}" fill="#FFFFFF" opacity=".95"/>`;
   }
   return s;
 }
-
 function treeSVG(x, y, s = 1, snowy = false) {
-  const leaf  = snowy ? '#7FB98A' : '#3FAE63';
-  const leaf2 = snowy ? '#98C9A1' : '#4CC072';
+  const leaf = snowy ? '#7FB98A' : '#3FAE63', leaf2 = snowy ? '#98C9A1' : '#4CC072';
   return `<g transform="translate(${x},${y}) scale(${s})">
     <rect x="-7" y="-34" width="14" height="36" rx="5" fill="#8A5A3B"/>
     <circle cx="0" cy="-52" r="24" fill="${leaf}"/>
     <circle cx="-20" cy="-38" r="17" fill="${leaf2}"/>
     <circle cx="20" cy="-38" r="17" fill="${leaf2}"/>
-    ${snowy ? '<circle cx="0" cy="-64" r="7" fill="#FFFFFF"/>' : ''}
-  </g>`;
+    ${snowy ? '<circle cx="0" cy="-64" r="7" fill="#FFFFFF"/>' : ''}</g>`;
 }
-
 function flowerSVG(x, y, s = 1, colour = '#FF7AA8') {
   let petals = '';
   for (let i = 0; i < 5; i++) {
-    const ang = i * 2 * Math.PI / 5 - Math.PI / 2;
-    petals += `<circle cx="${(Math.cos(ang) * 7).toFixed(1)}" cy="${(Math.sin(ang) * 7).toFixed(1)}" r="5.5" fill="${colour}"/>`;
+    const a = i * 2 * Math.PI / 5 - Math.PI / 2;
+    petals += `<circle cx="${(Math.cos(a) * 7).toFixed(1)}" cy="${(Math.sin(a) * 7).toFixed(1)}" r="5.5" fill="${colour}"/>`;
   }
   return `<g transform="translate(${x},${y}) scale(${s})">
     <path d="M0 0 v-22" stroke="#3B9E5B" stroke-width="3" stroke-linecap="round"/>
     <path d="M0 -12 q-10 -4 -12 -12" stroke="#3B9E5B" stroke-width="3" fill="none" stroke-linecap="round"/>
-    <g transform="translate(0,-26)">${petals}<circle r="4.5" fill="#FFD34D"/></g>
-  </g>`;
+    <g transform="translate(0,-26)">${petals}<circle r="4.5" fill="#FFD34D"/></g></g>`;
 }
-
 function puddleSVG(x, y) {
   return `<ellipse cx="${x}" cy="${y}" rx="34" ry="10" fill="#8FD0F5" stroke="#5AA9D6" stroke-width="2"/>
-          <ellipse cx="${x - 9}" cy="${y - 3}" rx="12" ry="3" fill="#D8F2FF" opacity=".85"/>`;
+    <ellipse cx="${x - 9}" cy="${y - 3}" rx="12" ry="3" fill="#D8F2FF" opacity=".85"/>`;
 }
-
 function snowmanSVG(x, y, s = 1) {
   return `<g transform="translate(${x},${y}) scale(${s})">
     <circle cx="0" cy="-18" r="22" fill="#FFFFFF" stroke="#C8D9E8" stroke-width="2"/>
@@ -924,359 +1113,208 @@ function snowmanSVG(x, y, s = 1) {
     <circle cx="0" cy="-80" r="12" fill="#FFFFFF" stroke="#C8D9E8" stroke-width="2"/>
     <circle cx="-4" cy="-83" r="1.8" fill="#2B3A55"/><circle cx="4" cy="-83" r="1.8" fill="#2B3A55"/>
     <path d="M12 -80 l9 3 l-9 3 z" fill="#FF8A3D"/>
-    <circle cx="0" cy="-58" r="1.8" fill="#2B3A55"/><circle cx="0" cy="-50" r="1.8" fill="#2B3A55"/>
-  </g>`;
+    <circle cx="0" cy="-58" r="1.8" fill="#2B3A55"/><circle cx="0" cy="-50" r="1.8" fill="#2B3A55"/></g>`;
 }
-
-const GROUND = fill =>
-  `<path d="M0 168 Q80 150 160 166 T320 162 L320 200 L0 200 Z" fill="${fill}"/>`;
-
 function thermometerSVG(x, y, pct, colour = '#FF5A5A') {
-  const H = 80;
-  const fillH = Math.max(8, Math.round(H * pct));
+  const H = 80, fillH = Math.max(8, Math.round(H * pct));
   return `<g transform="translate(${x},${y})">
-    <rect x="-8" y="-90" width="16" height="${H}" rx="8" fill="#FFFFFF" stroke="#17233f" stroke-width="3"/>
+    <rect x="-8" y="-90" width="16" height="${H}" rx="8" fill="#FFF" stroke="#17233f" stroke-width="3"/>
     <rect x="-4" y="${-10 - fillH}" width="8" height="${fillH}" rx="4" fill="${colour}"/>
-    <circle cx="0" cy="-2" r="13" fill="#FFFFFF" stroke="#17233f" stroke-width="3"/>
-    <circle cx="0" cy="-2" r="7" fill="${colour}"/>
-  </g>`;
+    <circle cx="0" cy="-2" r="13" fill="#FFF" stroke="#17233f" stroke-width="3"/>
+    <circle cx="0" cy="-2" r="7" fill="${colour}"/></g>`;
 }
-
 function fogBands() {
   let s = '';
   [62, 92, 122, 152, 180].forEach((y, i) => {
-    s += `<rect x="-24" y="${y}" width="368" height="18" rx="9" fill="#FFFFFF" opacity="${(0.5 + i * 0.07).toFixed(2)}"/>`;
+    s += `<rect x="-24" y="${y}" width="368" height="18" rx="9" fill="#FFF" opacity="${(0.5 + i * 0.07).toFixed(2)}"/>`;
   });
   return s;
 }
-
 function windCurves() {
-  return `<g fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" opacity=".9">
-    <path d="M26 108 q30 -14 60 0 t60 0"/>
-    <path d="M14 140 q26 -12 52 0 t52 0"/>
-  </g>`;
+  return `<g fill="none" stroke="#FFF" stroke-width="6" stroke-linecap="round" opacity=".9">
+    <path d="M26 108 q30 -14 60 0 t60 0"/><path d="M14 140 q26 -12 52 0 t52 0"/></g>`;
 }
-
 function leafSVG(x, y, s = 1, rot = 0) {
   return `<ellipse cx="${x}" cy="${y}" rx="${8 * s}" ry="${4 * s}" fill="#5BBF6B"
-            transform="rotate(${rot} ${x} ${y})"/>`;
+    transform="rotate(${rot} ${x} ${y})"/>`;
 }
-
 function boltSVG(x, y, s = 1) {
   return `<g transform="translate(${x},${y}) scale(${s})">
     <polygon points="8,0 -8,38 8,38 -4,76 32,30 14,30 26,0"
-             fill="#FFD34D" stroke="#FFB01F" stroke-width="2"/>
-  </g>`;
+      fill="#FFD34D" stroke="#FFB01F" stroke-width="2"/></g>`;
 }
-
 function soundArcs(cx, cy) {
   let s = '';
   for (let i = 1; i <= 3; i++) {
     const r = i * 22;
-    s += `<path d="M${cx - r} ${cy} A ${r} ${r} 0 0 0 ${cx + r} ${cy}"
-            fill="none" stroke="#FFE9A8" stroke-width="4" opacity="${(0.8 - i * 0.16).toFixed(2)}"/>`;
+    s += `<path d="M${cx - r} ${cy} A ${r} ${r} 0 0 0 ${cx + r} ${cy}" fill="none"
+      stroke="#FFE9A8" stroke-width="4" opacity="${(0.8 - i * 0.16).toFixed(2)}"/>`;
   }
   return s;
 }
-
 function hailSVG() {
   const pts = [[78, 84], [118, 118], [158, 78], [198, 110], [238, 92], [98, 150], [188, 148], [248, 138]];
   return pts.map(([x, y], i) =>
-    `<circle cx="${x}" cy="${y}" r="${5 + (i % 3)}" fill="#FFFFFF" stroke="#BFD9EC" stroke-width="2"/>`
-  ).join('');
+    `<circle cx="${x}" cy="${y}" r="${5 + (i % 3)}" fill="#FFF" stroke="#BFD9EC" stroke-width="2"/>`).join('');
 }
-
 function rainbowSVG(cx, cy, r) {
   const cols = ['#FF5A5A', '#FF9F43', '#FFD34D', '#4CC072', '#4AA8E0', '#7A6FF0', '#B56FF0'];
   return cols.map((c, i) => {
     const rr = r - i * 8;
-    return `<path d="M${cx - rr} ${cy} A ${rr} ${rr} 0 0 1 ${cx + rr} ${cy}"
-              fill="none" stroke="${c}" stroke-width="8" opacity=".92"/>`;
+    return `<path d="M${cx - rr} ${cy} A ${rr} ${rr} 0 0 1 ${cx + rr} ${cy}" fill="none"
+      stroke="${c}" stroke-width="8" opacity=".92"/>`;
   }).join('');
 }
-
 function heatWaves() {
-  return `<g fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" opacity=".8">
-    <path d="M36 146 q10 -12 20 0 t20 0"/>
-    <path d="M104 160 q10 -12 20 0 t20 0"/>
-    <path d="M196 152 q10 -12 20 0 t20 0"/>
-  </g>`;
+  return `<g fill="none" stroke="#FFF" stroke-width="4" stroke-linecap="round" opacity=".8">
+    <path d="M36 146 q10 -12 20 0 t20 0"/><path d="M104 160 q10 -12 20 0 t20 0"/>
+    <path d="M196 152 q10 -12 20 0 t20 0"/></g>`;
 }
-
 function dropSVG(x, y, s = 1, colour = '#7FD0F5') {
   return `<g transform="translate(${x},${y}) scale(${s})">
     <path d="M0 -12 C6 -4 10 0 10 6 A10 10 0 1 1 -10 6 C-10 0 -6 -4 0 -12Z"
-          fill="${colour}" stroke="#3FA9D9" stroke-width="2"/>
-  </g>`;
+      fill="${colour}" stroke="#3FA9D9" stroke-width="2"/></g>`;
 }
-
 function sparkleSVG(x, y, r = 8) {
   const k = (r * 0.28).toFixed(1);
   return `<path d="M${x} ${y - r} L${x + k} ${y - k} L${x + r} ${y} L${x + k} ${y + k}
-            L${x} ${y + r} L${x - k} ${y + k} L${x - r} ${y} L${x - k} ${y - k} Z"
-            fill="#FFFFFF" stroke="#9FCFE8" stroke-width="1.5"/>`;
+    L${x} ${y + r} L${x - k} ${y + k} L${x - r} ${y} L${x - k} ${y - k} Z"
+    fill="#FFF" stroke="#9FCFE8" stroke-width="1.5"/>`;
 }
-
 function snowflakeStar(x, y, r) {
   let s = '';
   for (let i = 0; i < 3; i++) {
-    const a = i * Math.PI / 3;
-    const dx = Math.cos(a) * r, dy = Math.sin(a) * r;
+    const a = i * Math.PI / 3, dx = Math.cos(a) * r, dy = Math.sin(a) * r;
     s += `<line x1="${x - dx}" y1="${y - dy}" x2="${x + dx}" y2="${y + dy}"
-            stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/>`;
+      stroke="#FFF" stroke-width="3" stroke-linecap="round"/>`;
   }
   return s;
 }
 
-/* =========================================================
-   5. Weather scenes
-   ========================================================= */
 function weatherScene(id, opts = {}) {
-  const palette = SKY[id] || SKY.sunny;
-  const [top, bottom, ground] = palette;
+  const [top, bottom, ground] = SKY[id] || SKY.sunny;
   const gid = 'sky' + (++uid);
   const nature = !!opts.nature;
-  let s = '';
-
-  s += `<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="${top}"/><stop offset="1" stop-color="${bottom}"/>
-        </linearGradient></defs>`;
-  s += `<rect width="320" height="200" fill="url(#${gid})"/>`;
+  let s = `<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="${top}"/><stop offset="1" stop-color="${bottom}"/></linearGradient></defs>
+    <rect width="320" height="200" fill="url(#${gid})"/>`;
 
   switch (id) {
-    case 'sunny': {
-      s += sunSVG(250, 50, 26);
-      s += cloudSVG(74, 52, .7);
-      s += GROUND(ground);
-      if (nature) {
-        s += treeSVG(50, 172, .95);
-        s += flowerSVG(112, 180, 1, '#FF7AA8');
-        s += flowerSVG(140, 184, .8, '#FFB3D1');
-      }
+    case 'sunny':
+      s += sunSVG(250, 50, 26) + cloudSVG(74, 52, .7) + GROUND(ground);
+      if (nature) s += treeSVG(50, 172, .95) + flowerSVG(112, 180, 1) + flowerSVG(140, 184, .8, '#FFB3D1');
       break;
-    }
-    case 'cloudy': {
-      s += cloudSVG(80, 60, 1.05);
-      s += cloudSVG(200, 52, .85, '#F3F8FC');
-      s += cloudSVG(150, 104, .7, '#E4EEF6');
-      s += GROUND(ground);
-      if (nature) {
-        s += treeSVG(52, 172, .95);
-        s += flowerSVG(118, 180, 1, '#FFA8C6');
-      }
+    case 'cloudy':
+      s += cloudSVG(80, 60, 1.05) + cloudSVG(200, 52, .85, '#F3F8FC') + cloudSVG(150, 104, .7, '#E4EEF6') + GROUND(ground);
+      if (nature) s += treeSVG(52, 172, .95) + flowerSVG(118, 180, 1, '#FFA8C6');
       break;
-    }
-    case 'rainy': {
-      s += cloudSVG(160, 56, 1.25, '#CEDBE7');
-      s += rainSVG();
-      s += GROUND(ground);
-      if (nature) {
-        s += puddleSVG(196, 178);
-        s += treeSVG(48, 172, .9);
-        s += flowerSVG(120, 182, .85, '#FFA8C6');
-      }
+    case 'rainy':
+      s += cloudSVG(160, 56, 1.25, '#CEDBE7') + rainSVG() + GROUND(ground);
+      if (nature) s += puddleSVG(196, 178) + treeSVG(48, 172, .9) + flowerSVG(120, 182, .85, '#FFA8C6');
       break;
-    }
-    case 'windy': {
-      s += cloudSVG(80, 52, .8);
-      s += windCurves();
-      s += GROUND(ground);
-      if (nature) {
-        s += `<g transform="rotate(-9 246 172)">${treeSVG(246, 172, 1)}</g>`;
-        s += flowerSVG(120, 184, .85, '#FF9AC0');
-      }
+    case 'windy':
+      s += cloudSVG(80, 52, .8) + windCurves() + GROUND(ground);
+      if (nature) s += `<g transform="rotate(-9 246 172)">${treeSVG(246, 172, 1)}</g>` + flowerSVG(120, 184, .85, '#FF9AC0');
       break;
-    }
-    case 'snowy': {
-      s += cloudSVG(150, 54, 1.1, '#DCE8F2');
-      s += flakesSVG(20);
-      s += GROUND(ground);
-      if (nature) {
-        s += treeSVG(52, 172, .9, true);
-        s += `<ellipse cx="150" cy="182" rx="46" ry="9" fill="#EAF4FF"/>`;
-      }
+    case 'snowy':
+      s += cloudSVG(150, 54, 1.1, '#DCE8F2') + flakesSVG(20) + GROUND(ground);
+      if (nature) s += treeSVG(52, 172, .9, true) + `<ellipse cx="150" cy="182" rx="46" ry="9" fill="#EAF4FF"/>`;
       break;
-    }
-    case 'stormy': {
-      s += cloudSVG(88, 50, 1.2, '#4C5E78');
-      s += cloudSVG(204, 44, 1, '#3E4F68');
-      s += boltSVG(146, 96, 1);
-      s += rainSVG();
-      s += GROUND(ground);
-      if (nature) s += `<g opacity=".9">${puddleSVG(150, 180)}</g>`;
+    case 'stormy':
+      s += cloudSVG(88, 50, 1.2, '#4C5E78') + cloudSVG(204, 44, 1, '#3E4F68') + boltSVG(146, 96, 1) + rainSVG() + GROUND(ground);
+      if (nature) s += puddleSVG(150, 180);
       break;
-    }
-    case 'hot': {
-      s += sunSVG(232, 44, 34);
-      s += heatWaves();
-      s += GROUND(ground);
-      s += thermometerSVG(64, 162, .95, '#FF4D4D');
+    case 'hot':
+      s += sunSVG(232, 44, 34) + heatWaves() + GROUND(ground) + thermometerSVG(64, 162, .95, '#FF4D4D');
       if (nature) s += treeSVG(272, 172, .7);
       break;
-    }
-    case 'cold': {
-      s += cloudSVG(72, 48, .8, '#E6F1FA');
-      s += flakesSVG(14);
-      s += GROUND(ground);
-      s += snowmanSVG(216, 178, 1.02);
+    case 'cold':
+      s += cloudSVG(72, 48, .8, '#E6F1FA') + flakesSVG(14) + GROUND(ground) + snowmanSVG(216, 178, 1.02);
       break;
-    }
-    case 'foggy': {
-      s += `<circle cx="252" cy="44" r="24" fill="#FFE7A8" opacity=".5"/>`;
-      s += GROUND(ground);
-      s += treeSVG(64, 172, .9);
-      s += fogBands();
+    case 'foggy':
+      s += `<circle cx="252" cy="44" r="24" fill="#FFE7A8" opacity=".5"/>` + GROUND(ground) + treeSVG(64, 172, .9) + fogBands();
       if (nature) s += flowerSVG(140, 184, .8, '#E9A8C6');
       break;
-    }
-    case 'breezy': {
-      s += cloudSVG(76, 50, .7);
-      s += windCurves();
-      s += GROUND(ground);
-      s += leafSVG(96, 110, 1, -25);
-      s += leafSVG(132, 94, .9, 15);
-      s += leafSVG(172, 126, .8, -10);
-      s += `<g transform="rotate(-7 250 172)">${treeSVG(250, 172, .95)}</g>`;
+    case 'breezy':
+      s += cloudSVG(76, 50, .7) + windCurves() + GROUND(ground) +
+        leafSVG(96, 110, 1, -25) + leafSVG(132, 94, .9, 15) + leafSVG(172, 126, .8, -10) +
+        `<g transform="rotate(-7 250 172)">${treeSVG(250, 172, .95)}</g>`;
       if (nature) s += flowerSVG(70, 182, .9, '#FF9AC0');
       break;
-    }
-    case 'freezing': {
-      s += cloudSVG(92, 44, .8, '#E9F4FC');
-      s += GROUND(ground);
-      s += `<ellipse cx="150" cy="176" rx="58" ry="14" fill="#CFEAFB" stroke="#9FCFE8" stroke-width="2"/>`;
-      s += flakesSVG(16);
-      s += thermometerSVG(64, 162, .06, '#4AA8E0');
+    case 'freezing':
+      s += cloudSVG(92, 44, .8, '#E9F4FC') + GROUND(ground) +
+        `<ellipse cx="150" cy="176" rx="58" ry="14" fill="#CFEAFB" stroke="#9FCFE8" stroke-width="2"/>` +
+        flakesSVG(16) + thermometerSVG(64, 162, .06, '#4AA8E0');
       break;
-    }
-    case 'boiling': {
-      s += sunSVG(70, 44, 32);
-      s += heatWaves();
-      s += GROUND(ground);
-      s += thermometerSVG(252, 162, .98, '#FF3D3D');
-      s += dropSVG(160, 62, 1.1);
-      s += dropSVG(200, 86, .8);
+    case 'boiling':
+      s += sunSVG(70, 44, 32) + heatWaves() + GROUND(ground) + thermometerSVG(252, 162, .98, '#FF3D3D') +
+        dropSVG(160, 62, 1.1) + dropSVG(200, 86, .8);
       break;
-    }
-    case 'warm': {
-      s += sunSVG(248, 44, 24);
-      s += cloudSVG(80, 54, .6);
-      s += GROUND(ground);
-      s += thermometerSVG(60, 162, .55, '#FFA94D');
-      if (nature) {
-        s += flowerSVG(146, 182, 1, '#FF7AA8');
-        s += flowerSVG(176, 186, .8, '#FFC24D');
-      }
+    case 'warm':
+      s += sunSVG(248, 44, 24) + cloudSVG(80, 54, .6) + GROUND(ground) + thermometerSVG(60, 162, .55, '#FFA94D');
+      if (nature) s += flowerSVG(146, 182, 1) + flowerSVG(176, 186, .8, '#FFC24D');
       break;
-    }
-    case 'mild': {
-      s += sunSVG(122, 40, 18);
-      s += cloudSVG(122, 56, .9, '#F2F8FC');
-      s += GROUND(ground);
-      s += thermometerSVG(262, 162, .42, '#8ED08A');
+    case 'mild':
+      s += sunSVG(122, 40, 18) + cloudSVG(122, 56, .9, '#F2F8FC') + GROUND(ground) + thermometerSVG(262, 162, .42, '#8ED08A');
       if (nature) s += flowerSVG(70, 184, .9, '#FFB3D1');
       break;
-    }
-    case 'humid': {
-      s += `<circle cx="240" cy="46" r="26" fill="#FFE7A8" opacity=".65"/>`;
-      s += GROUND(ground);
-      s += dropSVG(70, 80, 1.1);
-      s += dropSVG(112, 58, .8);
-      s += dropSVG(152, 98, 1);
-      s += dropSVG(196, 72, .85);
+    case 'humid':
+      s += `<circle cx="240" cy="46" r="26" fill="#FFE7A8" opacity=".65"/>` + GROUND(ground) +
+        dropSVG(70, 80, 1.1) + dropSVG(112, 58, .8) + dropSVG(152, 98, 1) + dropSVG(196, 72, .85);
       if (nature) s += treeSVG(262, 172, .8);
       break;
-    }
-    case 'icy': {
-      s += GROUND(ground);
-      s += `<polygon points="30,168 118,158 150,176 60,182" fill="#BFE6FA" stroke="#8FC7E6" stroke-width="2"/>`;
-      s += `<polygon points="170,172 260,162 292,180 200,184" fill="#CFEFFC" stroke="#8FC7E6" stroke-width="2"/>`;
-      s += `<path d="M74 166 l14 4 l-9 6 z" fill="#FFFFFF" opacity=".9"/>`;
-      s += sparkleSVG(240, 60);
-      s += sparkleSVG(80, 118, 6);
-      s += sparkleSVG(200, 108, 7);
-      s += snowflakeStar(150, 48, 14);
+    case 'icy':
+      s += GROUND(ground) +
+        `<polygon points="30,168 118,158 150,176 60,182" fill="#BFE6FA" stroke="#8FC7E6" stroke-width="2"/>` +
+        `<polygon points="170,172 260,162 292,180 200,184" fill="#CFEFFC" stroke="#8FC7E6" stroke-width="2"/>` +
+        `<path d="M74 166 l14 4 l-9 6 z" fill="#FFF" opacity=".9"/>` +
+        sparkleSVG(240, 60) + sparkleSVG(80, 118, 6) + sparkleSVG(200, 108, 7) + snowflakeStar(150, 48, 14);
       break;
-    }
-    case 'lightning': {
-      s += cloudSVG(96, 52, 1.15, '#465872');
-      s += cloudSVG(212, 44, .95, '#3C4D66');
-      s += boltSVG(148, 88, 1.15);
-      s += rainSVG();
-      s += GROUND(ground);
+    case 'lightning':
+      s += cloudSVG(96, 52, 1.15, '#465872') + cloudSVG(212, 44, .95, '#3C4D66') + boltSVG(148, 88, 1.15) + rainSVG() + GROUND(ground);
       break;
-    }
-    case 'thunder': {
-      s += cloudSVG(122, 52, 1.25, '#4A5B74');
-      s += boltSVG(90, 86, .6);
-      s += boltSVG(232, 92, .5);
-      s += soundArcs(160, 106);
-      s += rainSVG([70, 110, 150, 190, 230, 262], 104);
-      s += GROUND(ground);
+    case 'thunder':
+      s += cloudSVG(122, 52, 1.25, '#4A5B74') + boltSVG(90, 86, .6) + boltSVG(232, 92, .5) +
+        soundArcs(160, 106) + rainSVG([70, 110, 150, 190, 230, 262], 104) + GROUND(ground);
       break;
-    }
-    case 'hail': {
-      s += cloudSVG(160, 54, 1.2, '#C9D7E4');
-      s += hailSVG();
-      s += GROUND(ground);
-      s += `<g stroke="#FFFFFF" stroke-width="2" fill="none" opacity=".8">
-              <path d="M60 178 q8 -7 16 0"/>
-              <path d="M212 180 q8 -7 16 0"/>
-            </g>`;
+    case 'hail':
+      s += cloudSVG(160, 54, 1.2, '#C9D7E4') + hailSVG() + GROUND(ground) +
+        `<g stroke="#FFF" stroke-width="2" fill="none" opacity=".8">
+          <path d="M60 178 q8 -7 16 0"/><path d="M212 180 q8 -7 16 0"/></g>`;
       break;
-    }
-    case 'drizzling': {
-      s += cloudSVG(150, 52, 1.05, '#D9E5EE');
-      s += drizzleSVG();
-      s += GROUND(ground);
-      s += puddleSVG(196, 178);
+    case 'drizzling':
+      s += cloudSVG(150, 52, 1.05, '#D9E5EE') + drizzleSVG() + GROUND(ground) + puddleSVG(196, 178);
       if (nature) s += treeSVG(52, 172, .9);
       break;
-    }
-    case 'rainbow': {
-      s += sunSVG(272, 40, 20);
-      s += cloudSVG(54, 62, .7);
-      s += rainbowSVG(160, 152, 112);
-      s += GROUND(ground);
-      if (nature) {
-        s += flowerSVG(66, 182, .9, '#FF7AA8');
-        s += treeSVG(258, 174, .75);
-      }
+    case 'rainbow':
+      s += sunSVG(272, 40, 20) + cloudSVG(54, 62, .7) + rainbowSVG(160, 152, 112) + GROUND(ground);
+      if (nature) s += flowerSVG(66, 182, .9) + treeSVG(258, 174, .75);
       break;
-    }
-    default: {
-      s += sunSVG(250, 50, 26);
-      s += GROUND(ground);
-      break;
-    }
+    default:
+      s += sunSVG(250, 50, 26) + GROUND(ground);
   }
-
   return `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid meet" role="img"
-            aria-label="${id} weather picture">${s}</svg>`;
+    aria-label="${id} weather picture">${s}</svg>`;
 }
 
 /* =========================================================
-   6. Stars and confetti
+   5. Stars / confetti
    ========================================================= */
 let stars = 0;
 function addStars(n = 1) {
   stars += n;
   $('#starCount').textContent = stars;
   const box = $('#starBox');
-  box.classList.remove('bump');
-  void box.offsetWidth;
-  box.classList.add('bump');
-  floatStar('+' + n);
-  if (stars > 0 && stars % 10 === 0) { confetti(); sfx.win(); }
-}
-function floatStar(txt) {
+  box.classList.remove('bump'); void box.offsetWidth; box.classList.add('bump');
   const el = document.createElement('div');
   el.className = 'float-star';
-  el.textContent = txt + ' ⭐';
-  const r = $('#starBox').getBoundingClientRect();
+  el.textContent = '+' + n + ' ⭐';
+  const r = box.getBoundingClientRect();
   el.style.left = (r.left + r.width / 2) + 'px';
   el.style.top = (r.top + r.height) + 'px';
   document.body.appendChild(el);
   setTimeout(() => el.remove(), 1200);
+  if (stars % 15 === 0) { confetti(); sfx.win(); }
 }
 function confetti() {
   const bits = ['✨', '⭐', '🎉', '🌟', '☀️', '💫'];
@@ -1293,52 +1331,227 @@ function confetti() {
 }
 
 /* =========================================================
-   7. Learn section
+   6. Settings UI
    ========================================================= */
-function weatherCardHTML(t) {
-  return `<button class="learn-card" type="button" data-say="${t.word}. ${t.ex}">
-      <div class="scene">${weatherScene(t.id, { nature: packOn('nature') })}</div>
-      <div class="learn-word">${t.word} <span aria-hidden="true">${t.emoji}</span></div>
-      <div class="learn-sentence">${t.ex}</div>
-    </button>`;
+function buildSettings() {
+  const wrap = $('#accWrap');
+  wrap.innerHTML = '';
+
+  CATS.forEach(cat => {
+    const acc = document.createElement('div');
+    acc.className = 'acc' + (cat.id === 'conditions' ? ' open' : '');
+    acc.dataset.cat = cat.id;
+
+    const items = cat.id === 'frames'
+      ? FRAMES.map(f => ({ id: f.id, label: f.label, emoji: f.e, frame: true }))
+      : WORDS.filter(w => w.cat === cat.id).map(w => ({ id: w.id, label: w.w, emoji: w.e, frame: false }));
+
+    acc.innerHTML = `
+      <button class="acc-head" type="button" aria-expanded="${cat.id === 'conditions'}">
+        <span class="acc-emoji" aria-hidden="true">${cat.emoji}</span>
+        <span class="acc-title"><strong>${cat.title}</strong><em>${cat.note}</em></span>
+        <span class="acc-count" data-count="${cat.id}">0</span>
+        <span class="acc-chev" aria-hidden="true">▾</span>
+      </button>
+      <div class="acc-body">
+        <div class="acc-tools">
+          <button class="mini" data-all="${cat.id}" type="button">All</button>
+          <button class="mini" data-none="${cat.id}" type="button">None</button>
+        </div>
+        <div class="chipwrap" data-chips="${cat.id}"></div>
+      </div>`;
+
+    const chips = $('[data-chips]', acc);
+    items.forEach(it => {
+      const on = it.frame ? framesOn.has(it.id) : enabled.has(it.id);
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'wchip' + (on ? ' on' : '');
+      b.dataset.chip = it.id;
+      b.dataset.frame = it.frame ? '1' : '0';
+      b.innerHTML = `<span class="wemoji" aria-hidden="true">${it.emoji}</span>
+        <span>${esc(it.label)}</span><span class="wbox" aria-hidden="true">✓</span>`;
+      b.onclick = () => {
+        const isFrame = b.dataset.frame === '1';
+        const set = isFrame ? framesOn : enabled;
+        if (set.has(it.id)) set.delete(it.id); else set.add(it.id);
+        sfx.pop();
+        syncSettingsUI();
+      };
+      chips.appendChild(b);
+    });
+
+    $('.acc-head', acc).onclick = () => {
+      const open = acc.classList.toggle('open');
+      $('.acc-head', acc).setAttribute('aria-expanded', String(open));
+      sfx.click();
+    };
+    wrap.appendChild(acc);
+  });
+
+  wrap.addEventListener('click', e => {
+    const allBtn = e.target.closest('[data-all]');
+    const noneBtn = e.target.closest('[data-none]');
+    if (!allBtn && !noneBtn) return;
+    const catId = (allBtn || noneBtn).dataset.all || (allBtn || noneBtn).dataset.none;
+    const cat = CATS.find(c => c.id === catId);
+    if (cat.id === 'frames') {
+      if (allBtn) FRAMES.forEach(f => framesOn.add(f.id));
+      else FRAMES.forEach(f => framesOn.delete(f.id));
+    } else {
+      const ids = WORDS.filter(w => w.cat === cat.id).map(w => w.id);
+      if (allBtn) ids.forEach(id => enabled.add(id));
+      else ids.forEach(id => enabled.delete(id));
+    }
+    sfx.pop();
+    syncSettingsUI();
+  });
+
+  const row = $('#presetRow');
+  row.innerHTML = '';
+  PRESETS.forEach((p, i) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'preset' + (i === 0 ? ' primary' : '');
+    b.textContent = p.label;
+    b.onclick = () => {
+      enabled.clear();
+      if (p.words === 'ALL') WORDS.forEach(w => enabled.add(w.id));
+      else if (p.words == null) WORDS.filter(w => w.cat !== 'natureS' && w.cat !== 'natureP').forEach(w => enabled.add(w.id));
+      else p.words.forEach(id => enabled.add(id));
+      framesOn.clear();
+      p.frames.forEach(f => framesOn.add(f));
+      sfx.correct();
+      syncSettingsUI();
+      toast(p.label.replace(/^\S+\s/, '') + ' loaded ✓');
+    };
+    row.appendChild(b);
+  });
 }
 
-function bindLearnCards(root) {
+function syncSettingsUI() {
+  $$('.wchip').forEach(chip => {
+    const isFrame = chip.dataset.frame === '1';
+    const on = isFrame ? framesOn.has(chip.dataset.chip) : enabled.has(chip.dataset.chip);
+    chip.classList.toggle('on', on);
+  });
+
+  CATS.forEach(cat => {
+    const el = $(`.acc-count[data-count="${cat.id}"]`);
+    if (!el) return;
+    let total, on;
+    if (cat.id === 'frames') { total = FRAMES.length; on = framesOn.size; }
+    else {
+      const list = WORDS.filter(w => w.cat === cat.id);
+      total = list.length;
+      on = list.filter(w => enabled.has(w.id)).length;
+    }
+    el.textContent = on + '/' + total;
+    el.classList.toggle('any', on > 0);
+  });
+
+  $('#openSettingsTop').textContent = '⚙️ ' + yearCount() + ' words';
+  renderStrip();
+  refreshEverything();
+}
+
+function renderStrip() {
+  const strip = $('#wordStrip');
+  strip.innerHTML = '<span class="strip-label">On today</span>';
+  CATS.forEach(cat => {
+    let on, total;
+    if (cat.id === 'frames') { total = FRAMES.length; on = framesOn.size; }
+    else {
+      const list = WORDS.filter(w => w.cat === cat.id);
+      total = list.length;
+      on = list.filter(w => enabled.has(w.id)).length;
+    }
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'strip-btn' + (on > 0 ? ' any' : '');
+    b.innerHTML = `<span aria-hidden="true">${cat.emoji}</span> ${cat.title} <b>${on}/${total}</b>`;
+    b.onclick = () => openSettings(cat.id);
+    strip.appendChild(b);
+  });
+}
+
+function openSettings(catId) {
+  $('#settingsOverlay').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  if (catId) {
+    const acc = $(`.acc[data-cat="${catId}"]`);
+    if (acc) {
+      $$('.acc').forEach(a => a.classList.remove('open'));
+      acc.classList.add('open');
+      setTimeout(() => acc.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80);
+    }
+  }
+}
+function closeSettings() {
+  $('#settingsOverlay').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+
+$('#openSettingsTop').onclick = () => { sfx.click(); openSettings(); };
+$('#closeSettings').onclick = () => { sfx.click(); closeSettings(); };
+
+function refreshEverything() {
+  renderLearn();
+  renderWordbank();
+  if (inited.has('quiz')) startQuiz();
+  if (inited.has('quick')) startQuickDraw();
+  if (inited.has('memory')) startMemory();
+  if (inited.has('spin')) startSpin();
+  if (inited.has('detective')) startDetective();
+  if (inited.has('wardrobe')) startWardrobe();
+  if (inited.has('om')) startOM();
+  if (!hasNaturePairs() && currentGame === 'om') showGame('quiz');
+}
+
+/* =========================================================
+   7. Learn section
+   ========================================================= */
+function learnCard(t) {
+  return `<button class="learn-card" type="button" data-say="${esc(t.w)}. ${esc(t.ex)}">
+      <div class="scene">${weatherScene(t.id, { nature: hasNatureOn() })}</div>
+      <div class="learn-word">${esc(t.w)} <span aria-hidden="true">${t.e}</span></div>
+      <div class="learn-sentence">${esc(t.ex)}</div>
+    </button>`;
+}
+function bindCards(root) {
   $$('.learn-card', root).forEach(card => {
     card.onclick = () => {
       sfx.pop();
-      card.classList.remove('pop');
-      void card.offsetWidth;
-      card.classList.add('pop');
+      card.classList.remove('pop'); void card.offsetWidth; card.classList.add('pop');
       speak(card.dataset.say);
     };
   });
 }
+const hasNatureOn = () => activeNature().length > 0;
+const hasNaturePairs = () => {
+  const bases = {};
+  activeNature().forEach(w => { bases[w.base] = (bases[w.base] || 0) + 1; });
+  return Object.keys(bases).length >= 2;
+};
 
 function renderLearn() {
   const grid = $('#weatherGrid');
-  grid.innerHTML = CORE_WORDS.map(weatherCardHTML).join('');
-  bindLearnCards(grid);
-
-  const more = $('#moreGrid');
-  more.innerHTML = MORE_WORDS.map(weatherCardHTML).join('');
-  bindLearnCards(more);
-  $('#moreBlock').classList.toggle('hidden', !packOn('more'));
+  const list = activeWeather();
+  grid.innerHTML = list.length
+    ? list.map(learnCard).join('')
+    : `<div class="empty-note">No weather words are on. Tap <b>⚙️ Words</b> at the top to choose some.</div>`;
+  bindCards(grid);
 
   const ngrid = $('#natureGrid');
-  const cards = [];
-  NATURE.forEach(n => {
-    cards.push({ text: n.one, emojis: n.emoji, plural: false });
-    cards.push({ text: n.many, emojis: n.manyEmoji, plural: true });
-  });
-  ngrid.innerHTML = cards.map(c => `
-    <button class="learn-card" type="button" data-say="${c.text}.">
-      <div class="nature-stage ${c.plural ? 'plural' : ''}" aria-hidden="true">${c.emojis}</div>
-      <div class="learn-word">${c.text}</div>
-      <div class="learn-sentence">${cap(c.text)}.</div>
-    </button>`).join('');
-  bindLearnCards(ngrid);
-  $('#natureBlock').classList.toggle('hidden', !packOn('nature'));
+  const nat = activeNature();
+  ngrid.innerHTML = nat.map(w => `
+      <button class="learn-card" type="button" data-say="${esc(w.w)}.">
+        <div class="nature-stage" aria-hidden="true">${w.e}</div>
+        <div class="learn-word">${esc(w.w)}</div>
+        <div class="learn-sentence">${cap(esc(w.ex))}</div>
+      </button>`).join('');
+  bindCards(ngrid);
+  $('#natureBlock').classList.toggle('hidden', nat.length === 0);
 }
 
 $('#heroSpeak').onclick = () => {
@@ -1348,76 +1561,8 @@ $('#heroSpeak').onclick = () => {
 };
 
 /* =========================================================
-   8. Vocabulary chooser
+   8. Tabs & sound
    ========================================================= */
-function syncPacks() {
-  $$('.pack').forEach(b => {
-    const on = packOn(b.dataset.pack);
-    b.classList.toggle('on', on);
-    b.setAttribute('aria-pressed', String(on));
-  });
-  $$('.nature-only').forEach(el => el.classList.toggle('hidden', !packOn('nature')));
-  $('#wordCount').textContent = wordTotal() + ' words';
-}
-
-function onVocabChange() {
-  renderLearn();
-  syncPacks();
-  renderWordbank();
-
-  if (!packOn('nature') && currentGame === 'om') showGame('quiz');
-  if (inited.has('quiz')) startQuiz();
-  if (inited.has('memory')) startMemory();
-  if (inited.has('spin')) startSpin();
-  if (inited.has('detective')) startDetective();
-  if (inited.has('wardrobe')) startWardrobe();
-  if (packOn('nature') && inited.has('om')) startOM();
-}
-
-$$('.pack').forEach(btn => {
-  btn.onclick = () => {
-    const p = btn.dataset.pack;
-    if (p === 'core') {
-      sfx.pop();
-      $('#vocabNote').innerHTML = 'Weather basics always stays on — it is the backbone of the lesson. 🙂';
-      return;
-    }
-    if (activePacks.has(p)) activePacks.delete(p); else activePacks.add(p);
-    sfx.pop();
-    onVocabChange();
-    if (!activePacks.has(p)) {
-      $('#vocabNote').innerHTML = 'Tap a set to switch it on or off. Cards, games and Mo update straight away. <b>Weather basics</b> stays on.';
-    } else {
-      const names = { nature: 'Nature words on 🌸', more: 'More weather on 🌪️' };
-      $('#vocabNote').textContent = names[p] + ' — everything now uses these words.';
-      speak(p === 'nature' ? 'Nature words.' : 'More weather words.');
-    }
-  };
-});
-
-$('#vocabToggle').onclick = () => {
-  const inner = $('#vocabInner');
-  const collapsed = inner.classList.toggle('collapsed');
-  $('#vocabToggle').textContent = collapsed ? 'Show ▼' : 'Hide ▲';
-  $('#vocabToggle').setAttribute('aria-expanded', String(!collapsed));
-  sfx.click();
-};
-
-$('#wordCount').onclick = () => {
-  $('#vocabBar').scrollIntoView({ behavior: 'smooth', block: 'start' });
-};
-
-/* =========================================================
-   9. Tabs
-   ========================================================= */
-const gameInits = {
-  quiz: startQuiz,
-  memory: startMemory,
-  spin: startSpin,
-  detective: startDetective,
-  wardrobe: startWardrobe,
-  om: startOM
-};
 const inited = new Set();
 let currentGame = 'quiz';
 
@@ -1427,23 +1572,33 @@ $$('.tab').forEach(btn => {
     $$('.panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + btn.dataset.tab));
     sfx.click();
     if (btn.dataset.tab === 'games') showGame(currentGame);
+    if (btn.dataset.tab !== 'games') stopQuickDraw();
+    if (btn.dataset.tab === 'chat') armChipFade();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 });
 
-$('#soundBtn').addEventListener('click', () => {
+$('#soundBtn').onclick = () => {
   soundOn = !soundOn;
   $('#soundBtn').textContent = soundOn ? '🔊' : '🔇';
   $('#soundBtn').setAttribute('aria-pressed', String(soundOn));
   if (!soundOn && 'speechSynthesis' in window) speechSynthesis.cancel();
-});
+  if (currentGame === 'quick') refreshQdPrompt();
+};
 
 /* =========================================================
-   10. Games
+   9. Game plumbing
    ========================================================= */
+const gameInits = {
+  quiz: startQuiz, quick: startQuickDraw, memory: startMemory, spin: startSpin,
+  detective: startDetective, wardrobe: startWardrobe, om: startOM
+};
+
 function showGame(name) {
   if (!gameInits[name]) return;
+  if (name === 'om' && !hasNaturePairs()) { toast('Turn on nature words first 🌸'); return; }
   currentGame = name;
+  if (name !== 'quick') stopQuickDraw();
   $$('.game').forEach(g => g.classList.toggle('active', g.id === 'game-' + name));
   $$('.game-chip').forEach(c => c.classList.toggle('active', c.dataset.game === name));
   if (!inited.has(name)) { inited.add(name); gameInits[name](); }
@@ -1458,63 +1613,77 @@ function pickOptions(target, pool, n) {
   if (cands.length < n - 1) cands = pool.filter(w => w.id !== target.id);
   return shuffle([target, ...shuffle(cands).slice(0, n - 1)]);
 }
+function needFour() {
+  const pool = activeWeather();
+  if (pool.length < 4) { toast('Turn on at least 4 weather words ⚙️'); return null; }
+  return pool;
+}
 
-/* ---------- 10a. Tap it! ---------- */
-const quiz = { queue: [], i: 0, score: 0, tries: 0, locked: false };
+/* ---------- 9a. Tap it! ---------- */
+const quiz = { queue: [], i: 0, score: 0, tries: 0, locked: false, combo: 0, best: store.get('quizBest', 0) };
 
 function startQuiz() {
-  const pool = activeWeatherWords();
-  const rounds = shuffle(pool).slice(0, Math.min(8, pool.length));
-  quiz.queue = rounds.map(target => ({ target, options: pickOptions(target, pool, 4) }));
-  quiz.i = 0;
-  quiz.score = 0;
-  quiz.tries = 0;
-  quiz.locked = false;
+  const pool = needFour();
   $('#quizDone').classList.add('hidden');
   $('#quizGrid').classList.remove('hidden');
   $('.quiz-prompt').classList.remove('hidden');
+  if (!pool) { quiz.queue = []; $('#quizGrid').innerHTML = ''; $('#quizWord').textContent = '—'; return; }
+
+  quiz.queue = shuffle(pool).slice(0, Math.min(8, pool.length))
+    .map(t => ({ target: t, options: pickOptions(t, pool, 4) }));
+  quiz.i = 0; quiz.score = 0; quiz.combo = 0; quiz.locked = false;
+  $('#quizBest').textContent = 'Best: ' + quiz.best;
   renderQuiz();
 }
 
 function renderQuiz() {
   const q = quiz.queue[quiz.i];
   if (!q) { finishQuiz(); return; }
-
-  quiz.tries = 0;
-  quiz.locked = false;
-  $('#quizWord').textContent = q.target.word;
+  quiz.tries = 0; quiz.locked = false;
+  $('#quizWord').textContent = q.target.w;
   $('#quizScore').textContent = quiz.score + ' / ' + quiz.queue.length;
-  $('#quizHear').onclick = () => { sfx.click(); speak(q.target.word + '. ' + q.target.ex); };
+  $('#quizHear').onclick = () => { sfx.click(); speak(q.target.w + '. ' + q.target.ex); };
 
   const grid = $('#quizGrid');
   grid.innerHTML = '';
   q.options.forEach(t => {
     const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'opt';
-    b.dataset.id = t.id;
-    b.innerHTML = weatherScene(t.id, { nature: packOn('nature') });
+    b.type = 'button'; b.className = 'opt'; b.dataset.id = t.id;
+    b.innerHTML = weatherScene(t.id, { nature: hasNatureOn() });
     b.onclick = () => answerQuiz(b, t.id);
     grid.appendChild(b);
   });
-  speak(q.target.word);
+  speak(q.target.w);
+}
+
+function bumpCombo(el, n) {
+  if (n < 2) { el.classList.remove('on'); return; }
+  el.textContent = '🔥 x' + n;
+  el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
 }
 
 function answerQuiz(btn, id) {
   if (quiz.locked) return;
   const q = quiz.queue[quiz.i];
   if (!q) return;
+  const pill = $('#quizScore');
 
   if (id === q.target.id) {
     quiz.locked = true;
     btn.classList.add('right');
     sfx.correct();
-    if (quiz.tries === 0) quiz.score++;
-    $('#quizScore').textContent = quiz.score + ' / ' + quiz.queue.length;
+    if (quiz.tries === 0) {
+      quiz.score++; quiz.combo++;
+      addStars(quiz.combo >= 3 ? 2 : 1);
+    }
+    bumpCombo($('#quizCombo'), quiz.combo);
+    pill.classList.remove('pop'); void pill.offsetWidth; pill.classList.add('pop');
+    pill.textContent = quiz.score + ' / ' + quiz.queue.length;
     speak(q.target.ex);
-    setTimeout(() => { quiz.i++; renderQuiz(); }, 950);
+    setTimeout(() => { quiz.i++; renderQuiz(); }, 900);
   } else {
-    quiz.tries++;
+    quiz.tries++; quiz.combo = 0;
+    bumpCombo($('#quizCombo'), 0);
     sfx.wrong();
     btn.classList.add('wrong', 'shake');
     btn.disabled = true;
@@ -1527,76 +1696,183 @@ function finishQuiz() {
   $('.quiz-prompt').classList.add('hidden');
   $('#quizDone').classList.remove('hidden');
   $('#quizDoneText').textContent = `You got ${quiz.score} of ${quiz.queue.length}! ⭐`;
-  sfx.win();
-  confetti();
-  addStars(3);
+  if (quiz.score > quiz.best) { quiz.best = quiz.score; store.set('quizBest', quiz.best); }
+  $('#quizBest').textContent = 'Best: ' + quiz.best + ' / ' + quiz.queue.length;
+  sfx.win(); confetti(); addStars(3);
 }
 $('#quizAgain').onclick = () => { sfx.click(); startQuiz(); };
 
-/* ---------- 10b. Memory ---------- */
-const mem = { first: null, lock: false, pairs: 0, total: 6 };
+/* ---------- 9b. Quick Draw ---------- */
+const qd = {
+  timer: null, reveal: null, left: 45000, score: 0, combo: 0, locked: false,
+  current: null, best: store.get('qdBest', 0), pool: []
+};
+
+function stopQuickDraw() {
+  if (qd.timer) { clearInterval(qd.timer); qd.timer = null; }
+  if (qd.reveal) { clearTimeout(qd.reveal); qd.reveal = null; }
+}
+
+function startQuickDraw() {
+  stopQuickDraw();
+  const pool = needFour();
+  $('#qdDone').classList.add('hidden');
+  $('#qdPlay').classList.remove('hidden');
+  if (!pool) { $('#qdWord').textContent = '—'; $('#qdOptions').innerHTML = ''; return; }
+
+  qd.pool = pool;
+  qd.left = 45000; qd.score = 0; qd.combo = 0; qd.locked = false;
+  $('#qdBest').textContent = 'Best: ' + qd.best + ' points';
+  $('#qdScore').textContent = '0 points';
+  bumpCombo($('#qdCombo'), 0);
+  updateQdBar();
+  renderQd();
+  qd.timer = setInterval(() => {
+    qd.left -= 100;
+    updateQdBar();
+    if (qd.left <= 0) finishQuickDraw();
+  }, 100);
+}
+
+function updateQdBar() {
+  const pct = Math.max(0, qd.left / 45000) * 100;
+  const fill = $('#qdFill');
+  if (fill) fill.style.width = pct + '%';
+}
+function qdPromptText() {
+  return soundOn ? '?' : (qd.current ? qd.current.w : '?');
+}
+function refreshQdPrompt() {
+  const el = $('#qdWord');
+  if (!el || !qd.current) return;
+  el.textContent = qdPromptText();
+  el.classList.remove('qd-reveal');
+}
+
+function renderQd() {
+  if (qd.reveal) { clearTimeout(qd.reveal); qd.reveal = null; }
+  qd.locked = false;
+  qd.current = rnd(qd.pool);
+  refreshQdPrompt();
+  $('#qdHear').onclick = () => { if (qd.current) speak(qd.current.w); };
+
+  const opts = pickOptions(qd.current, qd.pool, 4);
+  const box = $('#qdOptions');
+  box.innerHTML = '';
+  opts.forEach(t => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'qd-btn'; b.textContent = t.w + ' ' + t.e;
+    b.onclick = () => answerQd(b, t);
+    box.appendChild(b);
+  });
+  speak(qd.current.w);
+}
+
+function revealQdWord() {
+  const el = $('#qdWord');
+  if (!el || !qd.current) return;
+  el.textContent = qd.current.w;
+  el.classList.add('qd-reveal');
+  if (qd.reveal) clearTimeout(qd.reveal);
+  qd.reveal = setTimeout(() => {
+    if (qd.current) { el.textContent = qdPromptText(); el.classList.remove('qd-reveal'); }
+  }, 1400);
+}
+
+function answerQd(btn, t) {
+  if (qd.locked) return;
+  if (t.id === qd.current.id) {
+    qd.locked = true;
+    btn.classList.add('right');
+    qd.combo++;
+    qd.score += 1 + Math.min(qd.combo - 1, 4);
+    $('#qdScore').textContent = qd.score + ' points';
+    bumpCombo($('#qdCombo'), qd.combo);
+    sfx.correct();
+    setTimeout(renderQd, 240);
+  } else {
+    qd.combo = 0;
+    bumpCombo($('#qdCombo'), 0);
+    qd.left = Math.max(0, qd.left - 2000);
+    updateQdBar();
+    sfx.wrong();
+    btn.classList.add('wrong');
+    revealQdWord();
+    setTimeout(() => btn.classList.remove('wrong'), 320);
+  }
+}
+
+function finishQuickDraw() {
+  stopQuickDraw();
+  $('#qdPlay').classList.add('hidden');
+  $('#qdDone').classList.remove('hidden');
+  $('#qdDoneText').textContent = `Time! You got ${qd.score} points ⚡`;
+  if (qd.score > qd.best) { qd.best = qd.score; store.set('qdBest', qd.best); }
+  $('#qdBest').textContent = 'Best: ' + qd.best + ' points';
+  addStars(Math.max(1, Math.floor(qd.score / 3)));
+  sfx.win(); confetti();
+}
+$('#qdAgain').onclick = () => { sfx.click(); startQuickDraw(); };
+
+/* ---------- 9c. Memory ---------- */
+const mem = { first: null, lock: false, pairs: 0, total: 6, flips: 0, best: store.get('memBest', 0) };
 
 function startMemory() {
-  const pool = activeWeatherWords();
+  const pool = activeWeather();
+  $('#memDone').classList.add('hidden');
+  $('#memGrid').classList.remove('hidden');
+  if (pool.length < 2) { $('#memGrid').innerHTML = ''; $('#memScore').textContent = '0 / 0'; return; }
+
   const chosen = shuffle(pool).slice(0, Math.min(6, pool.length));
   mem.total = chosen.length;
+  mem.flips = 0;
   const deck = shuffle(chosen.flatMap(t => [
-    { id: t.id, kind: 'pic', t },
-    { id: t.id, kind: 'word', t }
+    { id: t.id, kind: 'pic', t }, { id: t.id, kind: 'word', t }
   ]));
 
   const grid = $('#memGrid');
   grid.innerHTML = '';
   deck.forEach(c => {
     const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'mem-card';
-    b.dataset.id = c.id;
+    b.type = 'button'; b.className = 'mem-card'; b.dataset.id = c.id;
     b.setAttribute('aria-label', 'card');
     b.innerHTML = `<span class="mem-inner">
         <span class="mem-face mem-back" aria-hidden="true">?</span>
         <span class="mem-face mem-front">${c.kind === 'pic'
-          ? `<span class="mem-emoji">${c.t.emoji}</span>`
-          : `<span class="mem-word">${c.t.word}</span>`}</span>
-      </span>`;
+          ? `<span class="mem-emoji">${c.t.e}</span>`
+          : `<span>${esc(c.t.w)}</span>`}</span></span>`;
     b.onclick = () => flipMem(b, c);
     grid.appendChild(b);
   });
 
-  mem.first = null;
-  mem.lock = false;
-  mem.pairs = 0;
+  mem.first = null; mem.lock = false; mem.pairs = 0;
   $('#memScore').textContent = '0 / ' + mem.total;
-  $('#memDone').classList.add('hidden');
-  grid.classList.remove('hidden');
+  $('#memBest').textContent = 'Best: ' + mem.best + ' flips';
 }
 
 function flipMem(el, c) {
   if (mem.lock || el.classList.contains('flipped') || el.classList.contains('matched')) return;
   el.classList.add('flipped');
+  mem.flips++;
   sfx.pop();
 
   if (!mem.first) { mem.first = { el, c }; return; }
 
-  const sameId = mem.first.c.id === c.id;
-  const differentKind = mem.first.c.kind !== c.kind;
-
-  if (sameId && differentKind) {
+  if (mem.first.c.id === c.id && mem.first.c.kind !== c.kind) {
     mem.first.el.classList.add('matched');
     el.classList.add('matched');
-    sfx.correct();
-    addStars(1);
+    sfx.correct(); addStars(1);
     speak(c.t.ex);
     mem.first = null;
     mem.pairs++;
     $('#memScore').textContent = mem.pairs + ' / ' + mem.total;
     if (mem.pairs === mem.total) setTimeout(() => {
       $('#memDone').classList.remove('hidden');
-      $('#memDoneText').textContent = 'You found them all! 🏆';
-      sfx.win();
-      confetti();
-      addStars(3);
-    }, 700);
+      $('#memDoneText').textContent = `You found them all in ${mem.flips} flips! 🏆`;
+      if (!mem.best || mem.flips < mem.best) { mem.best = mem.flips; store.set('memBest', mem.best); }
+      $('#memBest').textContent = 'Best: ' + mem.best + ' flips';
+      sfx.win(); confetti(); addStars(3);
+    }, 650);
   } else {
     mem.lock = true;
     sfx.wrong();
@@ -1604,66 +1880,66 @@ function flipMem(el, c) {
     setTimeout(() => {
       a.classList.remove('flipped');
       el.classList.remove('flipped');
-      mem.first = null;
-      mem.lock = false;
-    }, 850);
+      mem.first = null; mem.lock = false;
+    }, 820);
   }
 }
 $('#memAgain').onclick = () => { sfx.click(); startMemory(); };
 
-/* ---------- 10c. Spin & Say ---------- */
+/* ---------- 9d. Spin & Say ---------- */
+const CHALLENGES = [
+  'Say it loudly! 📣', 'Whisper it! 🤫', 'Say it like a monster! 👹',
+  'Sing it! 🎵', 'Say it very slowly. 🐢', 'Say it super fast! 🐇',
+  'Say it and jump! 🦘', 'Say it like a robot. 🤖'
+];
 const spin = { busy: false, current: null };
 
 function startSpin() {
-  const pool = activeWeatherWords();
+  const pool = activeWeather();
+  $('#spinSentence').classList.add('hidden');
+  $('#spinChallenge').classList.add('hidden');
+  if (!pool.length) { $('#spinStage').innerHTML = ''; return; }
   spin.current = rnd(pool);
   spin.busy = false;
-  $('#spinStage').innerHTML = weatherScene(spin.current.id, { nature: packOn('nature') });
-  $('#spinSentence').classList.add('hidden');
+  $('#spinStage').innerHTML = weatherScene(spin.current.id, { nature: hasNatureOn() });
 }
 
 function spinNow() {
-  if (spin.busy) return;
+  const pool = activeWeather();
+  if (spin.busy || !pool.length) return;
   spin.busy = true;
   $('#spinSentence').classList.add('hidden');
+  $('#spinChallenge').classList.add('hidden');
   sfx.click();
 
-  const order = shuffle(activeWeatherWords());
-  let i = 0;
-  let delay = 70;
-
+  const order = shuffle(pool);
+  let i = 0, delay = 70;
   const tick = () => {
     const t = order[i % order.length];
     i++;
-    $('#spinStage').innerHTML = weatherScene(t.id, { nature: packOn('nature') });
+    $('#spinStage').innerHTML = weatherScene(t.id, { nature: hasNatureOn() });
     delay *= 1.17;
-    if (delay < 360) {
-      setTimeout(tick, delay);
-    } else {
-      spin.busy = false;
-      landed(t);
-    }
+    if (delay < 360) setTimeout(tick, delay);
+    else { spin.busy = false; landed(t); }
   };
   tick();
 }
 
 function landed(t) {
   spin.current = t;
-  $('#spinStage').innerHTML = weatherScene(t.id, { nature: packOn('nature') });
-  const el = $('#spinSentence');
-  el.innerHTML = `<span class="big-sentence">${t.ex}</span> <span class="big-emoji" aria-hidden="true">${t.emoji}</span>`;
-  el.classList.add('hidden');
+  $('#spinStage').innerHTML = weatherScene(t.id, { nature: hasNatureOn() });
+  $('#spinSentence').innerHTML = `<span>${esc(t.ex)}</span> <span class="big-emoji" aria-hidden="true">${t.e}</span>`;
+  $('#spinSentence').classList.add('hidden');
+  const ch = $('#spinChallenge');
+  ch.textContent = rnd(CHALLENGES);
+  ch.classList.remove('hidden');
   sfx.pop();
   speak('Your turn!');
   addStars(1);
 }
 
 $('#spinBtn').onclick = spinNow;
-$('#spinHear').onclick = () => {
-  if (!spin.current) return;
-  sfx.click();
-  speak(spin.current.ex);
-};
+$('#spinHear').onclick = () => { if (spin.current) { sfx.click(); speak(spin.current.ex); } };
 $('#spinShow').onclick = () => {
   if (!spin.current) return;
   sfx.click();
@@ -1671,98 +1947,63 @@ $('#spinShow').onclick = () => {
   speak(spin.current.ex);
 };
 
-/* ---------- 10d. Weather Detective ---------- */
-const CLUES = [
-  { text: 'I see a puddle on the ground.', emoji: '💧', answer: 'rainy', why: 'Rain makes puddles!' },
-  { text: 'The trees are moving.', emoji: '🌳💨', answer: 'windy', why: 'The wind moves the trees!' },
-  { text: 'I need my umbrella.', emoji: '☔', answer: 'rainy', why: 'We use an umbrella in the rain!' },
-  { text: 'The snowman is smiling.', emoji: '⛄', answer: 'snowy', why: 'Snowmen are made of snow!' },
-  { text: 'I am wearing my scarf.', emoji: '🧣', answer: 'cold', why: 'We wear a scarf when it is cold!' },
-  { text: 'The sun is very strong.', emoji: '🥵', answer: 'hot', why: 'The hot sun makes us sweat!' },
-  { text: 'I hear thunder and see lightning.', emoji: '⛈️', answer: 'stormy', why: 'Thunder and lightning mean a storm!' },
-  { text: 'The sky is full of clouds.', emoji: '☁️', answer: 'cloudy', why: 'Lots of clouds make a cloudy sky!' },
-  { text: 'I cannot see the trees. It is white and grey.', emoji: '🌫️', answer: 'foggy', why: 'Fog is a cloud near the ground!' },
-  { text: 'The wind is soft and nice on my face.', emoji: '🍃', answer: 'breezy', why: 'A breeze is a soft wind!' },
-  { text: 'It is very, very cold. My hands are blue!', emoji: '🥶', answer: 'freezing', why: 'Freezing means very cold!' },
-  { text: 'It is very, very hot. I want ice cream!', emoji: '🥵', answer: 'boiling', why: 'Boiling means very hot!' },
-  { text: 'The air is wet and sticky.', emoji: '💦', answer: 'humid', why: 'Humid air has lots of water in it!' },
-  { text: 'The ground is ice. I must walk slowly.', emoji: '🧊', answer: 'icy', why: 'Ice is very slippery!' },
-  { text: 'I see a flash of light in the sky.', emoji: '⚡', answer: 'lightning', why: 'Lightning is a flash of light!' },
-  { text: 'I hear a big BOOM in the sky.', emoji: '🌩️', answer: 'thunder', why: 'Thunder comes after lightning!' },
-  { text: 'Little balls of ice are falling.', emoji: '🌨️', answer: 'hail', why: 'Hail is ice that falls like rain!' },
-  { text: 'It is raining, but only a little.', emoji: '🌦️', answer: 'drizzling', why: 'Drizzle is very light rain!' },
-  { text: 'I see many colours in the sky.', emoji: '🌈', answer: 'rainbow', why: 'Sun and rain make a rainbow!' },
-  { text: 'The weather is not hot and not cold.', emoji: '🌥️', answer: 'mild', why: 'Mild weather is nice and soft!' }
-];
-
+/* ---------- 9e. Detective ---------- */
 const det = { rounds: [], i: 0, score: 0, tries: 0, locked: false };
 
 function startDetective() {
-  const pool = activeWeatherWords();
-  const usable = CLUES.filter(c => pool.some(w => w.id === c.answer));
-  det.rounds = shuffle(usable).slice(0, 6).map(c => ({
-    ...c,
-    options: pickOptions(pool.find(w => w.id === c.answer), pool, 4).map(w => w.id)
-  }));
-  det.i = 0;
-  det.score = 0;
-  det.tries = 0;
-  det.locked = false;
+  const pool = activeWeather();
   $('#detDone').classList.add('hidden');
   $('#detClueCard').classList.remove('hidden');
   $('#detOptions').classList.remove('hidden');
+  if (pool.length < 4) { $('#detOptions').innerHTML = ''; $('#detClue').textContent = '—'; return; }
+
+  det.rounds = shuffle(pool).slice(0, Math.min(6, pool.length)).map(t => ({
+    word: t, options: pickOptions(t, pool, 4)
+  }));
+  det.i = 0; det.score = 0; det.tries = 0; det.locked = false;
   renderDetective();
 }
 
 function renderDetective() {
   const r = det.rounds[det.i];
   if (!r) { finishDetective(); return; }
-
-  det.tries = 0;
-  det.locked = false;
+  det.tries = 0; det.locked = false;
   $('#detScore').textContent = det.score + ' / ' + det.rounds.length;
-  $('#detClue').textContent = r.text;
-  $('#detEmoji').textContent = r.emoji;
-  $('#detHear').onclick = () => { sfx.click(); speak(r.text); };
+  $('#detClue').textContent = r.word.clue;
+  $('#detEmoji').textContent = r.word.e;
+  $('#detHear').onclick = () => { sfx.click(); speak(r.word.clue); };
 
   const box = $('#detOptions');
   box.innerHTML = '';
-  r.options.forEach(id => {
-    const t = activeWeatherWords().find(w => w.id === id);
-    if (!t) return;
+  r.options.forEach(t => {
     const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'det-opt';
-    b.dataset.id = id;
-    b.innerHTML = `<span class="emoji" aria-hidden="true">${t.emoji}</span><span>${t.word}</span>`;
-    b.onclick = () => answerDetective(b, id);
+    b.type = 'button'; b.className = 'det-opt'; b.dataset.id = t.id;
+    b.innerHTML = `<span class="emoji" aria-hidden="true">${t.e}</span><span>${esc(t.w)}</span>`;
+    b.onclick = () => answerDetective(b, t.id);
     box.appendChild(b);
   });
-  speak(r.text);
+  speak(r.word.clue);
 }
 
 function answerDetective(btn, id) {
   if (det.locked) return;
   const r = det.rounds[det.i];
   if (!r) return;
-
-  if (id === r.answer) {
+  if (id === r.word.id) {
     det.locked = true;
     btn.classList.add('right');
     if (det.tries === 0) det.score++;
     $('#detScore').textContent = det.score + ' / ' + det.rounds.length;
-    sfx.correct();
-    addStars(1);
-    const t = activeWeatherWords().find(w => w.id === r.answer);
-    speak(`${t.ex} ${r.why}`);
-    setTimeout(() => { det.i++; renderDetective(); }, 1600);
+    sfx.correct(); addStars(1);
+    speak(r.word.ex);
+    setTimeout(() => { det.i++; renderDetective(); }, 1400);
   } else {
     det.tries++;
     sfx.wrong();
     btn.classList.add('wrong', 'shake');
     btn.disabled = true;
     setTimeout(() => btn.classList.remove('shake'), 400);
-    if (det.tries >= 2) speak(r.text + ' Look again!');
+    if (det.tries >= 2) speak('Look again! ' + r.word.clue);
   }
 }
 
@@ -1771,87 +2012,64 @@ function finishDetective() {
   $('#detClueCard').classList.add('hidden');
   $('#detDone').classList.remove('hidden');
   $('#detDoneText').textContent = `You solved ${det.score} of ${det.rounds.length} clues! 🕵️`;
-  sfx.win();
-  confetti();
-  addStars(3);
+  sfx.win(); confetti(); addStars(3);
 }
 $('#detAgain').onclick = () => { sfx.click(); startDetective(); };
 
-/* ---------- 10e. Weather Wardrobe ---------- */
+/* ---------- 9f. Wardrobe ---------- */
 const WARDROBE_ITEMS = {
-  sunglasses: { label: 'sunglasses', emoji: '🕶️' },
-  hat:        { label: 'hat',        emoji: '🧢' },
-  water:      { label: 'water',      emoji: '🥤' },
-  umbrella:   { label: 'umbrella',   emoji: '☔' },
-  boots:      { label: 'boots',      emoji: '👢' },
-  coat:       { label: 'coat',       emoji: '🧥' },
-  scarf:      { label: 'scarf',      emoji: '🧣' },
-  gloves:     { label: 'gloves',     emoji: '🧤' }
+  sunglasses: { label: 'sunglasses', emoji: '🕶️' }, hat: { label: 'hat', emoji: '🧢' },
+  water: { label: 'water', emoji: '🥤' }, umbrella: { label: 'umbrella', emoji: '☔' },
+  boots: { label: 'boots', emoji: '👢' }, coat: { label: 'coat', emoji: '🧥' },
+  scarf: { label: 'scarf', emoji: '🧣' }, gloves: { label: 'gloves', emoji: '🧤' }
 };
-
 const WARDROBE_ROUNDS = [
-  { weather: 'sunny', label: "It's sunny.", need: ['sunglasses', 'hat'] },
-  { weather: 'rainy', label: "It's rainy.", need: ['umbrella', 'boots'] },
-  { weather: 'snowy', label: "It's snowy.", need: ['coat', 'scarf'] },
-  { weather: 'windy', label: "It's windy.", need: ['coat', 'hat'] },
-  { weather: 'hot',   label: "It's hot.",   need: ['sunglasses', 'water'] },
-  { weather: 'cold',  label: "It's cold.",  need: ['coat', 'gloves'] }
+  { weather: 'sunny', need: ['sunglasses', 'hat'] },
+  { weather: 'rainy', need: ['umbrella', 'boots'] },
+  { weather: 'snowy', need: ['coat', 'scarf'] },
+  { weather: 'windy', need: ['coat', 'hat'] },
+  { weather: 'hot',   need: ['sunglasses', 'water'] },
+  { weather: 'cold',  need: ['coat', 'gloves'] }
 ];
-
 const wd = { rounds: [], i: 0, score: 0, tries: 0, picked: [], locked: false, current: null };
 
 function startWardrobe() {
-  wd.rounds = shuffle(WARDROBE_ROUNDS);
-  wd.i = 0;
-  wd.score = 0;
-  wd.tries = 0;
-  wd.picked = [];
-  wd.locked = false;
-  wd.current = null;
   $('#wdDone').classList.add('hidden');
   $('#wdLayout').classList.remove('hidden');
+  const usable = WARDROBE_ROUNDS.filter(r => enabled.has(r.weather));
+  wd.rounds = shuffle(usable.length ? usable : WARDROBE_ROUNDS);
+  wd.i = 0; wd.score = 0; wd.tries = 0; wd.picked = []; wd.locked = false; wd.current = null;
   renderWardrobe();
 }
 
 function renderWardrobe() {
   const r = wd.rounds[wd.i];
   if (!r) { finishWardrobe(); return; }
-
-  wd.current = r;
-  wd.tries = 0;
-  wd.picked = [];
-  wd.locked = false;
+  wd.current = r; wd.tries = 0; wd.picked = []; wd.locked = false;
 
   $('#wdScore').textContent = wd.score + ' / ' + wd.rounds.length;
-  const wt = CORE_WORDS.find(w => w.id === r.weather) || activeWeatherWords().find(w => w.id === r.weather);
-  $('#wdWeather').textContent = `${r.label} ${wt ? wt.emoji : ''}`;
-  $('#wdScene').innerHTML = weatherScene(r.weather, { nature: packOn('nature') });
+  const wt = byId(r.weather);
+  $('#wdWeather').textContent = (wt ? wt.ex + ' ' : '') + (wt ? wt.e : '');
+  $('#wdScene').innerHTML = weatherScene(r.weather, { nature: hasNatureOn() });
   $('#wdPicked').textContent = 'Picked: 0 / 2';
 
   const pool = Object.keys(WARDROBE_ITEMS).filter(id => !r.need.includes(id));
-  const distractors = shuffle(pool).slice(0, 4);
-  const items = shuffle([...r.need, ...distractors]);
-
+  const items = shuffle([...r.need, ...shuffle(pool).slice(0, 4)]);
   const box = $('#wdItems');
   box.innerHTML = '';
   items.forEach(id => {
     const it = WARDROBE_ITEMS[id];
     const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'wd-item';
-    b.dataset.id = id;
+    b.type = 'button'; b.className = 'wd-item'; b.dataset.id = id;
     b.innerHTML = `<span class="emoji" aria-hidden="true">${it.emoji}</span><span>${it.label}</span>`;
     b.onclick = () => pickWardrobe(b, id);
     box.appendChild(b);
   });
-
-  speak(r.label + ' Pick two things.');
+  speak((wt ? wt.ex : '') + ' Pick two things.');
 }
 
 function pickWardrobe(btn, id) {
-  if (wd.locked) return;
-  if (btn.classList.contains('wrong') || btn.classList.contains('right')) return;
-
+  if (wd.locked || btn.classList.contains('wrong') || btn.classList.contains('right')) return;
   if (btn.classList.contains('picked')) {
     btn.classList.remove('picked');
     wd.picked = wd.picked.filter(x => x !== id);
@@ -1859,62 +2077,46 @@ function pickWardrobe(btn, id) {
     $('#wdPicked').textContent = `Picked: ${wd.picked.length} / 2`;
     return;
   }
-
   btn.classList.add('picked');
   wd.picked.push(id);
   sfx.pop();
   $('#wdPicked').textContent = `Picked: ${wd.picked.length} / 2`;
-
-  if (wd.picked.length === 2) {
-    wd.locked = true;
-    setTimeout(checkWardrobe, 350);
-  }
+  if (wd.picked.length === 2) { wd.locked = true; setTimeout(checkWardrobe, 320); }
 }
 
 function checkWardrobe() {
   const r = wd.current;
   if (!r) return;
-
-  const picked = wd.picked.slice();
-  const correct = picked.length === 2 && picked.every(id => r.need.includes(id));
+  const ok = wd.picked.length === 2 && wd.picked.every(id => r.need.includes(id));
   const buttons = $$('.wd-item');
+  const names = r.need.map(id => WARDROBE_ITEMS[id].label);
 
-  if (correct) {
+  if (ok) {
     if (wd.tries === 0) wd.score++;
     $('#wdScore').textContent = wd.score + ' / ' + wd.rounds.length;
-    sfx.correct();
-    addStars(1);
-
+    sfx.correct(); addStars(1);
     buttons.forEach(b => {
       if (r.need.includes(b.dataset.id)) b.classList.add('right');
       b.disabled = true;
     });
-
-    const names = r.need.map(id => WARDROBE_ITEMS[id].label);
-    speak(`${r.label} Yes! ${names[0]} and ${names[1]}.`);
-    setTimeout(() => { wd.i++; renderWardrobe(); }, 1600);
+    speak(`Yes! ${names[0]} and ${names[1]}.`);
+    setTimeout(() => { wd.i++; renderWardrobe(); }, 1500);
   } else {
     wd.tries++;
     sfx.wrong();
-
     buttons.forEach(b => {
       if (b.classList.contains('picked')) {
         b.classList.remove('picked');
         b.classList.add('wrong', 'shake');
-        setTimeout(() => b.classList.remove('shake'), 400);
+        setTimeout(() => b.classList.remove('shake'), 380);
       }
     });
-
     setTimeout(() => {
       buttons.forEach(b => b.classList.remove('wrong'));
-      wd.picked = [];
-      wd.locked = false;
+      wd.picked = []; wd.locked = false;
       $('#wdPicked').textContent = 'Picked: 0 / 2';
-      if (wd.tries >= 2) {
-        const names = r.need.map(id => WARDROBE_ITEMS[id].label);
-        speak(`Try ${names[0]} and ${names[1]}.`);
-      }
-    }, 850);
+      if (wd.tries >= 2) speak(`Try ${names[0]} and ${names[1]}.`);
+    }, 820);
   }
 }
 
@@ -1922,71 +2124,79 @@ function finishWardrobe() {
   $('#wdLayout').classList.add('hidden');
   $('#wdDone').classList.remove('hidden');
   $('#wdDoneText').textContent = `You got ${wd.score} of ${wd.rounds.length}! 🧥`;
-  sfx.win();
-  confetti();
-  addStars(3);
+  sfx.win(); confetti(); addStars(3);
 }
 $('#wdAgain').onclick = () => { sfx.click(); startWardrobe(); };
 
-/* ---------- 10f. One or Many? ---------- */
+/* ---------- 9g. One or Many ---------- */
 const om = { rounds: [], i: 0, score: 0, tries: 0, locked: false };
 
+function natureRounds() {
+  const bases = {};
+  activeNature().forEach(w => {
+    bases[w.base] = bases[w.base] || {};
+    bases[w.base][w.cat === 'natureS' ? 'one' : 'many'] = w;
+  });
+  const out = [];
+  Object.values(bases).forEach(pair => {
+    if (pair.one && pair.many) {
+      out.push({ pair, plural: false }, { pair, plural: true });
+    } else if (pair.one) out.push({ pair, plural: false });
+    else if (pair.many) out.push({ pair, plural: true });
+  });
+  return out;
+}
+
 function startOM() {
-  om.rounds = shuffle(NATURE.flatMap(n => [
-    { item: n, plural: false },
-    { item: n, plural: true }
-  ])).slice(0, 6);
-  om.i = 0;
-  om.score = 0;
+  const rounds = natureRounds();
   $('#omDone').classList.add('hidden');
   $('#omStage').classList.remove('hidden');
   $('#omOptions').classList.remove('hidden');
+  om.rounds = shuffle(rounds).slice(0, Math.min(6, rounds.length));
+  om.i = 0; om.score = 0;
   renderOM();
 }
 
 function renderOM() {
   const r = om.rounds[om.i];
   if (!r) { finishOM(); return; }
-
-  om.tries = 0;
-  om.locked = false;
+  om.tries = 0; om.locked = false;
   $('#omScore').textContent = om.score + ' / ' + om.rounds.length;
-  $('#omStage').innerHTML =
-    `<div class="om-emojis" aria-hidden="true">${r.plural ? r.item.manyEmoji : r.item.emoji}</div>`;
 
-  const opts = shuffle([
-    { text: r.item.one, correct: !r.plural },
-    { text: r.item.many, correct: r.plural }
-  ]);
+  const target = r.plural ? r.pair.many : r.pair.one;
+  const other = r.plural ? r.pair.one : r.pair.many;
+
+  $('#omStage').innerHTML = `<div class="om-emojis" aria-hidden="true">${target.e}</div>`;
+
+  const opts = other
+    ? shuffle([{ text: r.pair.one.w, correct: !r.plural }, { text: r.pair.many.w, correct: r.plural }])
+    : [{ text: target.w, correct: true }];
 
   const box = $('#omOptions');
   box.innerHTML = '';
   opts.forEach(o => {
     const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'om-btn';
-    b.textContent = o.text;
-    b.onclick = () => answerOM(b, o, r);
+    b.type = 'button'; b.className = 'om-btn'; b.textContent = o.text;
+    b.onclick = () => answerOM(b, o);
     box.appendChild(b);
   });
 }
 
-function answerOM(btn, o, r) {
+function answerOM(btn, o) {
   if (om.locked) return;
   if (o.correct) {
     om.locked = true;
     btn.classList.add('right');
     if (om.tries === 0) om.score++;
     $('#omScore').textContent = om.score + ' / ' + om.rounds.length;
-    sfx.correct();
-    addStars(1);
-    speak(r.plural ? r.item.many + '.' : r.item.one + '.');
-    setTimeout(() => { om.i++; renderOM(); }, 1000);
+    sfx.correct(); addStars(1);
+    speak(btn.textContent + '.');
+    setTimeout(() => { om.i++; renderOM(); }, 950);
   } else {
     om.tries++;
     sfx.wrong();
     btn.classList.add('wrong', 'shake');
-    setTimeout(() => btn.classList.remove('shake'), 400);
+    setTimeout(() => btn.classList.remove('shake'), 380);
   }
 }
 
@@ -1995,36 +2205,198 @@ function finishOM() {
   $('#omOptions').classList.add('hidden');
   $('#omDone').classList.remove('hidden');
   $('#omDoneText').textContent = `You got ${om.score} of ${om.rounds.length}! 🌟`;
-  sfx.win();
-  confetti();
-  addStars(3);
+  sfx.win(); confetti(); addStars(3);
 }
 $('#omAgain').onclick = () => { sfx.click(); startOM(); };
 
 /* =========================================================
+   10. Page-wide weather sky
+   ========================================================= */
+let bgOn = store.get('chatBg', true);
+
+const WX_SKY = {
+  sunny:   ['#8FD9FF', '#FFF4CF'],
+  cloudy:  ['#AFC3D6', '#EEF4F9'],
+  rainy:   ['#5F7A93', '#B9CBD8'],
+  windy:   ['#9CCDE6', '#EAF7FD'],
+  snowy:   ['#A7C6E2', '#F8FDFF'],
+  stormy:  ['#2F3D52', '#7B8FA5'],
+  hot:     ['#FFB35C', '#FFE9C0'],
+  cold:    ['#AECDE8', '#F3FBFF'],
+  foggy:   ['#C3D1DA', '#EEF3F6'],
+  breezy:  ['#A6D5EA', '#F0FAFE'],
+  freezing:['#A9CEEB', '#F6FCFF'],
+  boiling: ['#FF9C4A', '#FFE2B6'],
+  warm:    ['#A8DDFF', '#FFF3D8'],
+  mild:    ['#C0DFEC', '#F7FCF8'],
+  humid:   ['#BFD6AE', '#F2F8E2'],
+  icy:     ['#C6E6F8', '#F9FEFF'],
+  lightning:['#2C394E', '#77879C'],
+  thunder: ['#31405A', '#7E8FA6'],
+  hail:    ['#7E93A9', '#D6E2EC'],
+  drizzling:['#8FA9BC', '#DCE7EF'],
+  rainbow: ['#9EDCFF', '#FBFDFF']
+};
+
+function wxMany(n, fn) {
+  let s = '';
+  for (let i = 0; i < n; i++) s += fn(i);
+  return s;
+}
+
+function buildWxLayer(id) {
+  const sky = WX_SKY[id] || WX_SKY.sunny;
+  let h = `<div class="wx-sky" style="background:linear-gradient(180deg,${sky[0]} 0%,${sky[1]} 78%)"></div>`;
+
+  const clouds = (n, extra = '') => wxMany(n, i => {
+    const top = 3 + ((i * 41) % 46);
+    const dur = 55 + ((i * 23) % 45);
+    const delay = -((i * 19) % 50);
+    const sc = (0.55 + ((i * 17) % 60) / 100).toFixed(2);
+    return `<span class="wx-cloud ${extra}" style="top:${top}%;transform:scale(${sc});animation-duration:${dur}s;animation-delay:${delay}s"></span>`;
+  });
+
+  const drops = (n, cls = 'wx-drop') => wxMany(n, i => {
+    const left = ((i * 7.3) % 100).toFixed(1);
+    const dur = (0.72 + ((i * 13) % 60) / 100).toFixed(2);
+    const delay = (-((i * 7) % 110) / 10).toFixed(1);
+    const hgt = cls === 'wx-drop' ? 18 + ((i * 11) % 26) : 0;
+    const size = cls === 'wx-drop' ? '' : `width:${7 + (i % 4)}px;height:${7 + (i % 4)}px;`;
+    return `<span class="wx-p ${cls}" style="left:${left}%;${size}${hgt ? 'height:' + hgt + 'px;' : ''}animation-duration:${dur}s;animation-delay:${delay}s"></span>`;
+  });
+
+  const streaks = n => wxMany(n, i => {
+    const top = 8 + ((i * 33) % 78);
+    const dur = (3 + ((i * 11) % 30) / 10).toFixed(1);
+    const delay = (-((i * 13) % 30) / 10).toFixed(1);
+    const w = 80 + ((i * 37) % 120);
+    return `<span class="wx-p wx-streak" style="top:${top}%;width:${w}px;animation-duration:${dur}s;animation-delay:${delay}s"></span>`;
+  });
+
+  const fog = n => wxMany(n, i =>
+    `<span class="wx-fog" style="top:${6 + i * 16}%;animation-duration:${40 + i * 9}s;animation-delay:${-i * 7}s"></span>`);
+
+  switch (id) {
+    case 'sunny':
+      h += `<div class="wx-sun"></div>` + clouds(2); break;
+    case 'cloudy':
+      h += clouds(6); break;
+    case 'rainy':
+      h += clouds(4, 'dark') + drops(70); break;
+    case 'stormy':
+      h += clouds(5, 'dark') + drops(80) + `<div class="wx-flash"></div>`; break;
+    case 'windy':
+      h += clouds(3) + streaks(9); break;
+    case 'breezy':
+      h += clouds(3) + streaks(5); break;
+    case 'snowy':
+      h += clouds(3) + drops(60, 'wx-flake'); break;
+    case 'cold':
+      h += clouds(2) + drops(36, 'wx-flake'); break;
+    case 'freezing':
+      h += drops(50, 'wx-flake'); break;
+    case 'hail':
+      h += clouds(3, 'dark') + drops(45, 'wx-hail'); break;
+    case 'foggy':
+      h += fog(5); break;
+    case 'hot':
+      h += `<div class="wx-sun" style="top:-6%;right:-6%"></div>`; break;
+    case 'boiling':
+      h += `<div class="wx-sun" style="top:-10%;right:-10%;width:340px;height:340px"></div>`; break;
+    case 'warm':
+      h += `<div class="wx-sun"></div>` + clouds(2); break;
+    case 'mild':
+      h += `<div class="wx-sun" style="opacity:.55"></div>` + clouds(3); break;
+    case 'humid':
+      h += clouds(3) + drops(18); break;
+    case 'icy':
+      h += drops(26, 'wx-flake'); break;
+    case 'lightning':
+      h += clouds(4, 'dark') + `<div class="wx-flash"></div>`; break;
+    case 'thunder':
+      h += clouds(5, 'dark') + `<div class="wx-flash"></div>` + drops(34); break;
+    case 'drizzling':
+      h += clouds(4) + drops(26); break;
+    case 'rainbow':
+      h += `<svg class="wx-bow" viewBox="0 0 320 170" preserveAspectRatio="xMidYMax meet" aria-hidden="true">${rainbowSVG(160, 150, 140)}</svg>` +
+        clouds(2) + drops(14); break;
+    default:
+      h += clouds(2);
+  }
+  return h;
+}
+
+function setWeatherBackground(id) {
+  const layer = $('#wxLayer');
+  const body = document.body;
+  Array.from(body.classList)
+    .filter(c => c.indexOf('wx-') === 0)
+    .forEach(c => body.classList.remove(c));
+  layer.innerHTML = '';
+  if (!id) return;
+  body.classList.add('wx-on', 'wx-' + id);
+  layer.innerHTML = buildWxLayer(id);
+}
+
+/* =========================================================
    11. Chat with Mo
    ========================================================= */
-const chat = { step: 'ask', target: null, tries: 0, last: null, round: 0 };
+const chat = {
+  step: 'ask',
+  lastStep: 'ask',      /* the last interactive step, for recovery */
+  busyAt: 0,            /* when we entered 'busy', for the watchdog */
+  gen: 0,               /* bumped on restart so stale flows bail out */
+  target: null,
+  youTarget: null,
+  mode: 'photo',
+  tries: 0,
+  streak: 0,
+  last: null,
+  lastBg: null,
+  round: 0,
+  forgetful: false
+};
+
+/* ---- step machine helpers (the fix) ---- */
+function setStep(s) {
+  chat.step = s;
+  if (s === 'busy') {
+    chat.busyAt = Date.now();
+  } else {
+    chat.busyAt = 0;
+    chat.lastStep = s;
+  }
+}
+function busyRunning() { return chat.step === 'busy'; }
+
+let chatVoice = store.get('chatVoice', true);
+const CHIP_LIFE = 6500;
+let chipTimer = null;
 
 const QUESTION_RE = /(hows|how is|whats|what is)\s+the\s+weather/;
 const BASE_WORDS = {
   sun: 'sunny', rain: 'rainy', wind: 'windy', snow: 'snowy', storm: 'stormy', cloud: 'cloudy',
-  fog: 'foggy', breeze: 'breezy', freeze: 'freezing', boil: 'boiling', warm: 'warm',
-  mild: 'mild', humid: 'humid', ice: 'icy', lightning: 'lightning', thunder: 'thunder',
-  hail: 'hail', hailing: 'hail', drizzle: 'drizzling', rainbow: 'rainbow'
+  fog: 'foggy', breeze: 'breezy', freeze: 'freezing', boil: 'boiling', warm: 'warm', mild: 'mild',
+  humid: 'humid', ice: 'icy', icy: 'icy', lightning: 'lightning', thunder: 'thunder', hail: 'hail',
+  hailing: 'hail', drizzle: 'drizzling', rainbow: 'rainbow', drizzling: 'drizzling'
 };
 
-const NATURE_LINES = {
-  sunny:  ['I can see a <b>tree</b> and <b>flowers</b>! 🌳🌸', 'Look! <b>Flowers</b>! 🌸🌸🌸'],
-  rainy:  ['Look! A <b>puddle</b>! 💧', 'I can see <b>puddles</b>! 💧💧'],
-  cloudy: ['Look at the <b>clouds</b>! ☁️☁️', 'I can see <b>a cloud</b>! ☁️'],
-  snowy:  ['Look! A <b>tree</b> with snow! 🌳❄️', 'A <b>cloud</b> and snow! ☁️❄️'],
-  windy:  ['Look! The <b>trees</b> are moving! 🌳💨', 'Oh! <b>A cloud</b>! ☁️'],
-  stormy: ['Oh no! A big <b>cloud</b>! ☁️⚡', 'Look! <b>Puddles</b>! 💧💧'],
-  foggy:  ['I can see <b>trees</b> in the fog! 🌳🌫️'],
-  drizzling: ['Look! <b>A puddle</b>! 💧'],
-  rainbow: ['A <b>rainbow</b> over the <b>trees</b>! 🌳🌈']
-};
+const JOKES = [
+  "Why did the cloud stay at home? Because it was <b>under the weather</b>! ☁️😂",
+  "What did the wind say to the tree? <b>Leaf me alone!</b> 🍃😄",
+  "Why is the sun so good at school? Because it is <b>very bright</b>! ☀️😎",
+  "What do you call a snowman in the summer? A <b>puddle</b>! ⛄💧",
+  "Why did the raindrop go to the party? It wanted to <b>drop in</b>! 🌧️🎉",
+  "What did one puddle say to the other? <b>Water we doing today?</b> 💧😆"
+];
+
+const STICKERS = ['🎉', '🌟', '👏', '🥳', '💯', '🔥', '😍', '🏆', '🌈', '☀️'];
+
+const MO_GREETINGS = [
+  "Hi! 👋 I'm Mo, your weather buddy.",
+  "Hey there! 🐻 I'm Mo. Let's talk weather!",
+  "Hello hello! 🌤️ Mo here. Ready to chat?"
+];
 
 function addMsg(who, html, opts = {}) {
   const box = $('#messages');
@@ -2047,6 +2419,15 @@ function addMsg(who, html, opts = {}) {
   return el;
 }
 
+function sticker(emoji) {
+  const box = $('#messages');
+  const el = document.createElement('div');
+  el.className = 'msg sticker';
+  el.textContent = emoji;
+  box.appendChild(el);
+  box.scrollTop = box.scrollHeight;
+}
+
 function showTyping() {
   if ($('#typing')) return;
   const box = $('#messages');
@@ -2063,26 +2444,46 @@ function hideTyping() {
 }
 
 async function moSay(html, opts = {}) {
-  const delay = opts.delay != null
-    ? opts.delay
-    : Math.min(1000, 320 + String(html).length * 11);
+  const gen = chat.gen;
+  const delay = opts.delay != null ? opts.delay : Math.min(1050, 300 + String(html).length * 10);
   showTyping();
   await wait(delay);
   hideTyping();
+  if (gen !== chat.gen) return;      /* the chat was restarted — drop this bubble */
   addMsg('mo', html, opts);
-  await wait(140);
+  await wait(130);
 }
 
-function weatherAttachment(t) {
-  if (Math.random() < 0.58) {
-    return `<div class="photo">${weatherScene(t.id, { nature: packOn('nature') })}</div>`;
-  }
-  const extra = packOn('nature') ? '<span class="small">🌳</span>' : '';
-  return `<div class="emoji-tile"><span class="big">${t.emoji}</span>${extra}</div>`;
+function photoHTML(t) {
+  return `<div class="photo">${weatherScene(t.id, { nature: hasNatureOn() })}</div>`;
 }
+function emojiHTML(t) {
+  return `<div class="emoji-tile"><span class="big">${t.e}</span></div>`;
+}
+function voiceHTML() {
+  let bars = '';
+  for (let i = 0; i < 22; i++) {
+    const h = 6 + Math.round(Math.abs(Math.sin(i * 1.7)) * 18);
+    bars += `<i style="height:${h}px"></i>`;
+  }
+  return `<div class="voice">
+      <button class="vplay" type="button" aria-label="Play voice note">▶</button>
+      <span class="vwave" aria-hidden="true">${bars}</span>
+      <span class="vtime">0:0${3 + Math.floor(Math.random() * 4)}</span>
+    </div>`;
+}
+
+$('#messages').addEventListener('click', e => {
+  const btn = e.target.closest('.vplay');
+  if (!btn) return;
+  sfx.click();
+  const t = chat.step === 'you' ? chat.youTarget : chat.target;
+  if (t) speak(t.clue);
+});
 
 function pickTarget() {
-  const pool = chatWords();
+  const pool = activeWeather();
+  if (!pool.length) return null;
   const options = pool.filter(t => t.id !== chat.last);
   const t = rnd(options.length ? options : pool);
   chat.last = t.id;
@@ -2090,7 +2491,7 @@ function pickTarget() {
 }
 
 function detectWeather(q) {
-  const pool = activeWeatherWords();
+  const pool = activeWeather();
   for (const t of pool) {
     if (new RegExp('\\b' + t.id + '\\b').test(q)) return { id: t.id, form: 'exact' };
   }
@@ -2111,13 +2512,12 @@ function detectWeather(q) {
   return null;
 }
 
-function setInput(value) {
+function setInput(v) {
   const inp = $('#chatInput');
-  inp.value = value;
+  inp.value = v;
   inp.focus();
   updateSendState();
 }
-
 function appendWord(word) {
   const inp = $('#chatInput');
   const v = inp.value.trim();
@@ -2125,17 +2525,39 @@ function appendWord(word) {
   inp.focus();
   updateSendState();
 }
+function updateSendState() {
+  $('.send').classList.toggle('ready', !!$('#chatInput').value.trim());
+}
+$('#chatInput').addEventListener('input', updateSendState);
 
 function giveHint() {
-  if (!chat.target) return;
-  const w = chat.target.word.toLowerCase();
+  const t = chat.step === 'you' ? chat.youTarget : chat.target;
+  if (!t) return;
+  const w = t.w.toLowerCase();
   sfx.pop();
   addMsg('mo', `Hint 💡 It starts with <b>${w[0].toUpperCase()}</b> and it has <b>${w.length}</b> letters.`);
   speak('Hint. It starts with ' + w[0] + '.');
 }
 
+/* ---------- suggestion chips with a short life ---------- */
+function armChipFade() {
+  if (chipTimer) { clearTimeout(chipTimer); chipTimer = null; }
+  const targets = $$('#wordbank .chip.ask, #wordbank .chip.wx');
+  if (!targets.length) return;
+  chipTimer = setTimeout(() => {
+    targets.forEach((c, i) => {
+      if (!document.body.contains(c)) return;
+      setTimeout(() => {
+        c.classList.add('gone');
+        setTimeout(() => { if (c.parentNode) c.remove(); }, 400);
+      }, i * 55);
+    });
+  }, CHIP_LIFE);
+}
+
 function renderWordbank() {
   const wb = $('#wordbank');
+  if (chipTimer) { clearTimeout(chipTimer); chipTimer = null; }
   wb.innerHTML = '';
   const add = (label, cls, fn) => {
     const b = document.createElement('button');
@@ -2144,165 +2566,401 @@ function renderWordbank() {
     b.textContent = label;
     b.onclick = fn;
     wb.appendChild(b);
+    return b;
   };
 
   if (chat.step === 'ask') {
-    add("How's the weather? 💬", 'ask', () => setInput("How's the weather?"));
-    add('👋 Hi Mo!', 'soft', () => setInput('Hi Mo!'));
-    return;
-  }
+    if (framesOn.has('ask')) add("How's the weather? 💬", 'ask', () => setInput("How's the weather?"));
+    add('🌍 My weather', 'fun', () => startYourWeather());
+    add('😂 Tell me a joke', 'fun', () => tellJoke());
+    add('🎲 Surprise me', 'fun', () => surprise());
+  } else if (chat.step === 'answer' && chat.target) {
+    const noun = chat.target.kind === 'noun' && framesOn.has('there');
+    if (framesOn.has('its')) add(noun ? 'There is' : "It's", 'ask', () => setInput(noun ? 'There is ' : "It's "));
 
-  if (chat.step === 'answer' && chat.target) {
-    const noun = chat.target.kind === 'noun';
-    add(noun ? 'There is' : "It's", 'ask', () => setInput(noun ? 'There is ' : "It's "));
-
-    const others = shuffle(
-      chatWords().filter(w =>
-        w.id !== chat.target.id && w.kind === chat.target.kind && !sharesGroup(w, chat.target)
-      )
-    ).slice(0, 3);
+    const others = shuffle(activeWeather().filter(w =>
+      w.id !== chat.target.id && w.kind === chat.target.kind && !sharesGroup(w, chat.target)
+    )).slice(0, 3);
 
     shuffle([chat.target, ...others]).forEach(w => {
-      add(`${w.word} ${w.emoji}`, 'wx', () => appendWord(w.word));
+      add(`${w.w} ${w.e}`, 'wx', () => appendWord(w.w));
     });
     add('💡 Hint', 'soft', giveHint);
-    return;
+    add('🎲 Surprise me', 'fun', () => surprise());
+  } else if (chat.step === 'you' && chat.youTarget) {
+    add("It's", 'ask', () => setInput("It's "));
+    const others = shuffle(activeWeather().filter(w =>
+      w.id !== chat.youTarget.id && !sharesGroup(w, chat.youTarget)
+    )).slice(0, 3);
+    shuffle([chat.youTarget, ...others]).forEach(w => {
+      add(`${w.w} ${w.e}`, 'wx', () => appendWord(w.w));
+    });
+    add('💡 Hint', 'soft', giveHint);
+    add('🎲 Surprise me', 'fun', () => surprise());
+  } else if (chat.step === 'like') {
+    if (framesOn.has('like')) {
+      add('Yes, I do. 👍', 'ask', () => setInput('Yes, I do.'));
+      add("No, I don't. 👎", 'ask', () => setInput("No, I don't."));
+    }
+  } else {
+    add('One sec… ⏳', 'soft', () => {});
   }
 
-  add('One sec… ⏳', 'soft', () => {});
+  if ($('#wordbank .chip.ask, #wordbank .chip.wx')) {
+    add('💡 Words', 'soft', () => { sfx.click(); renderWordbank(); });
+  }
+  armChipFade();
 }
 
-function updateSendState() {
-  $('.send').classList.toggle('ready', !!$('#chatInput').value.trim());
+async function tellJoke() {
+  if (busyRunning()) return;
+  sfx.click();
+  await moSay(rnd(JOKES));
+  await repeatPrompt();
 }
-$('#chatInput').addEventListener('input', updateSendState);
+
+async function surprise() {
+  if (busyRunning()) return;
+  sfx.click();
+  const pool = activeWeather();
+  const roll = Math.random();
+  if (roll < 0.4 && pool.length) {
+    const t = rnd(pool);
+    sticker(t.e);
+    await moSay(`I like <b>${t.w.toLowerCase()}</b> weather! ${t.e} What about you?`);
+  } else if (roll < 0.7) {
+    await moSay(rnd([
+      'Fun fact! 🌈 A rainbow needs sun AND rain.',
+      'Fun fact! ⚡ Lightning is very, very hot.',
+      'Fun fact! ❄️ No two snowflakes are the same.',
+      'Fun fact! ☁️ Clouds can be heavier than an elephant!'
+    ]));
+  } else {
+    await moSay('Tap a blue chip and ask me a question! 👇');
+  }
+}
+
+async function repeatPrompt() {
+  if (chat.step === 'ask') {
+    await moSay(framesOn.has('ask')
+      ? "Now ask me: <b>How's the weather?</b> 👇"
+      : 'Tap a chip below 👇');
+  } else if (chat.step === 'answer' && chat.target) {
+    await moSay(chat.target.kind === 'noun' && framesOn.has('there')
+      ? "Now tell me: <b>There is …</b>"
+      : "Now tell me: <b>It's …</b>");
+  } else if (chat.step === 'you' && chat.youTarget) {
+    await moSay("Now tell me: <b>It's …</b>");
+  }
+}
+
+function setStreak(n) {
+  chat.streak = n;
+  const el = $('#chatStreak');
+  el.textContent = '🔥 ' + n;
+  if (n >= 3) {
+    el.classList.remove('hot'); void el.offsetWidth; el.classList.add('hot');
+  }
+}
+
+/* return to the "ask me" state, safely */
+async function backToAsk(gen) {
+  setStep('busy');
+  chat.target = null;
+  chat.youTarget = null;
+  chat.forgetful = false;
+  setWeatherBackground(null);
+  await moSay(framesOn.has('ask')
+    ? "Ask me again! 👉 <b>How's the weather?</b>"
+    : 'Ask me again! Tap a chip 👇');
+  if (gen !== undefined && gen !== chat.gen) return;
+  setStep('ask');
+  renderWordbank();
+  $('#chatInput').placeholder = framesOn.has('ask') ? "Ask me: How's the weather?" : 'Type here…';
+}
 
 async function startChat() {
-  chat.step = 'busy';
-  chat.round = 0;
-  chat.last = null;
-  chat.tries = 0;
+  chat.gen++;
+  setStep('busy');
+  chat.round = 0; chat.last = null; chat.tries = 0;
+  chat.target = null; chat.youTarget = null; chat.forgetful = false;
+  chat.lastStep = 'ask';
+  setWeatherBackground(null);
+  setStreak(0);
   $('#messages').innerHTML = '';
+  hideTyping();
+  $('#moStatus').textContent = 'online · your weather buddy';
   renderWordbank();
 
-  await moSay("Hi! 👋 I'm Mo, your weather buddy.");
+  const gen = chat.gen;
+  await moSay(rnd(MO_GREETINGS));
   await moSay("Let's talk about the weather! ☀️🌧️");
-  await moSay("First, ask me a question. Tap the blue chip 👇");
-  chat.step = 'ask';
+  if (gen !== chat.gen) return;
+  await moSay(framesOn.has('ask')
+    ? "First, ask me a question. Tap the blue chip 👇"
+    : "Tap a chip below to start 👇");
+  if (gen !== chat.gen) return;
+  setStep('ask');
   renderWordbank();
-  $('#chatInput').placeholder = "Ask me: How's the weather?";
+  $('#chatInput').placeholder = framesOn.has('ask') ? "Ask me: How's the weather?" : 'Type here…';
+}
+
+async function deliverTarget() {
+  const t = chat.target;
+  if (!t) return;
+
+  const modes = ['photo', 'emoji', 'riddle'];
+  if (chatVoice && t.kind !== 'noun') modes.push('voice', 'voice');
+  if (chatVoice && t.kind === 'noun' && Math.random() < 0.3) modes.push('voice');
+
+  const mode = rnd(modes);
+  chat.mode = mode;
+
+  if (mode === 'photo') {
+    await moSay('', { attach: photoHTML(t), delay: 720 });
+  } else if (mode === 'emoji') {
+    await moSay('', { attach: emojiHTML(t), delay: 560 });
+  } else if (mode === 'voice') {
+    await moSay('', { attach: voiceHTML(), delay: 620 });
+    await wait(250);
+    speak(t.clue);
+  } else {
+    await moSay('🤫 <b>Riddle!</b> ' + esc(t.clue));
+  }
+}
+
+/* Mo pretends to forget the word and asks the student for help */
+async function promptForAnswer() {
+  const t = chat.target;
+  const noun = t.kind === 'noun' && framesOn.has('there');
+  chat.forgetful = Math.random() < 0.5;
+  const frame = noun ? '<b>There is …</b>' : "<b>It's …</b>";
+
+  if (chat.forgetful) {
+    await moSay(rnd([
+      'Oh no! 🤔 I forgot the word for this. Can you help me?',
+      'Hmm… 🙈 What is this called? My memory is sleepy!',
+      'I know this one… 😅 but I forgot! What is it?'
+    ]));
+    await moSay(`You can say: ${frame}`);
+  } else {
+    await moSay(noun
+      ? "What's happening? Write: <b>There is …</b>"
+      : `What's the weather? Write: ${frame}`);
+  }
+}
+
+/* Mo's turn to ask about the student's OWN weather.
+   `force` lets it run from inside another flow that is already "busy". */
+async function startYourWeather(force = false) {
+  if (!force && busyRunning()) return;
+
+  const gen = chat.gen;
+  const pool = activeWeather();
+  if (!pool.length) { await backToAsk(gen); return; }
+
+  setStep('busy');
+  chat.tries = 0;
+
+  const options = pool.filter(w => w.id !== chat.lastBg);
+  const t = rnd(options.length ? options : pool);
+  chat.youTarget = t;
+  chat.lastBg = t.id;
+  setWeatherBackground(bgOn ? t.id : null);
+
+  await moSay(rnd([
+    'Now it is <b>my turn</b> to ask! 🙋',
+    'Wait — I want to ask <b>you</b> something! 😄',
+    'My turn! 🌍'
+  ]));
+  if (gen !== chat.gen) return;
+
+  if (!bgOn) await moSay('', { attach: photoHTML(t), delay: 620 });
+  if (gen !== chat.gen) return;
+
+  await moSay(bgOn
+    ? "Look at the sky around the phone! 👀 <b>How's the weather?</b>"
+    : "Look at this place. 👀 <b>How's the weather?</b>");
+  if (gen !== chat.gen) return;
+
+  await moSay("Tell me: <b>It's …</b>");
+  if (gen !== chat.gen) return;
+
+  setStep('you');
+  renderWordbank();
+  $('#chatInput').placeholder = "It's …";
 }
 
 async function handleAsk(text) {
+  const gen = chat.gen;
   const q = norm(text);
 
   if (QUESTION_RE.test(q)) {
-    chat.step = 'busy';
-    chat.target = pickTarget();
+    const t = pickTarget();
+    if (!t) { await moSay('Turn on some words in ⚙️ Settings first!'); return; }
+
+    setStep('busy');
+    chat.target = t;
     chat.tries = 0;
+    setStreak(chat.streak + 1);
     addStars(1);
     sfx.correct();
     renderWordbank();
 
-    await moSay(rnd(['Good question! 😄', 'Nice asking! 👍', 'Ooh, let me look… 👀']));
-    await moSay('', { attach: weatherAttachment(chat.target), delay: 850 });
+    await moSay(rnd(['Good question! 😄', 'Nice asking! 👍', 'Ooh, let me look… 👀', 'Let me check! 🔍']));
+    if (gen !== chat.gen) return;
+    await deliverTarget();
+    if (gen !== chat.gen) return;
+    await promptForAnswer();
+    if (gen !== chat.gen) return;
 
-    const noun = chat.target.kind === 'noun';
-    await moSay(noun
-      ? "What's happening? Write: <b>There is …</b>"
-      : "What's the weather? Write: <b>It's …</b>");
-
-    chat.step = 'answer';
+    setStep('answer');
     renderWordbank();
-    $('#chatInput').placeholder = noun ? 'There is …' : "It's …";
+    $('#chatInput').placeholder = (chat.target.kind === 'noun' && framesOn.has('there'))
+      ? 'There is …' : "It's …";
     return;
   }
+
+  if (/my weather|where i am|for me|around me/.test(q)) { await startYourWeather(); return; }
 
   if (/weather/.test(q)) {
     sfx.wrong();
     await moSay('Huh? 🤔');
     await moSay("Almost! Say it like this: <b>How's the weather?</b> Don't forget <b>the</b>! 👇");
+    setStep('ask');
+    renderWordbank();
     return;
   }
 
   if (/^(hi|hello|hey|yo|good morning|good afternoon|good evening)/.test(q)) {
     await moSay(rnd(['Hi! 😊', 'Hello! 👋', 'Hey there! 😄']));
-    await moSay("Ask me about the weather! Tap the blue chip 👇");
+    await moSay(framesOn.has('ask')
+      ? "Ask me about the weather! Tap the blue chip 👇"
+      : "Tap a chip below 👇");
+    setStep('ask');
+    renderWordbank();
     return;
   }
 
+  if (/joke/.test(q)) { await tellJoke(); return; }
+
   if (detectWeather(q)) {
     await moSay('Nice weather word! 😄');
-    await moSay("But first, ask me a question: <b>How's the weather?</b>");
+    await moSay(framesOn.has('ask')
+      ? "But first, ask me a question: <b>How's the weather?</b>"
+      : 'Tap a blue chip below to ask me 👇');
+    setStep('ask');
+    renderWordbank();
     return;
   }
 
   await moSay('Huh? 🤔');
-  await moSay("Tap the blue chip to ask me: <b>How's the weather?</b>");
+  await moSay(framesOn.has('ask')
+    ? "Tap the blue chip to ask me: <b>How's the weather?</b>"
+    : 'Tap a blue chip below 👇');
+  setStep('ask');
+  renderWordbank();
+}
+
+async function askFollowUp(t) {
+  if (t.kind !== 'adj' || !framesOn.has('like')) return false;
+  if (Math.random() > 0.45) return false;
+  await moSay(`Do you like <b>${t.w.toLowerCase()}</b> days? 👇`, { delay: 700 });
+  setStep('like');
+  renderWordbank();
+  return true;
 }
 
 async function handleAnswer(text) {
+  const gen = chat.gen;
   const q = norm(text);
   const target = chat.target;
-  if (!target) { chat.step = 'ask'; renderWordbank(); return; }
-  const found = detectWeather(q);
+  if (!target) { setStep('ask'); renderWordbank(); return; }
 
+  const found = detectWeather(q);
+  const useThere = target.kind === 'noun' && framesOn.has('there');
+
+  /* ---------- correct ---------- */
   if (found && found.id === target.id) {
-    chat.step = 'busy';
-    const noun = target.kind === 'noun';
+    setStep('busy');
+    chat.streak++;
     addStars(2);
-    sfx.win();
-    confetti();
+    setStreak(chat.streak);
+    sfx.win(); confetti();
     speak(target.ex);
 
-    await moSay(`<b>${rnd(['Yes!', 'Correct!', 'Right!', 'You got it!'])}</b> ${target.ex} ${target.emoji} 🎉`);
+    const praise = chat.forgetful
+      ? rnd(['Yes! Thank you for helping me! 🙏', 'That is it! You fixed my memory! 🧠✨'])
+      : rnd(['Yes!', 'Correct!', 'Right!', 'You got it!']);
+    chat.forgetful = false;
 
-    const frameOk = noun ? /\bthere (is|are)\b/.test(q) : /\b(its|it is)\b/.test(q);
-    if (!frameOk) {
-      await moSay(`Little tip 💡 We say: <b>${target.ex}</b>`);
+    await moSay(`<b>${praise}</b> ${esc(target.ex)} ${target.e} 🎉`);
+    if (gen !== chat.gen) return;
+
+    if (chat.streak >= 3 && Math.random() < 0.6) {
+      sticker(rnd(STICKERS));
+      await wait(120);
     }
-    if (packOn('nature') && NATURE_LINES[target.id]) {
-      await moSay(rnd(NATURE_LINES[target.id]), { delay: 700 });
+
+    const frameOk = useThere ? /\bthere (is|are)\b/.test(q) : /\b(its|it is)\b/.test(q);
+    if (!frameOk) {
+      await moSay(`Little tip 💡 We say: <b>${esc(target.ex)}</b>`);
+      if (gen !== chat.gen) return;
     }
 
     chat.round++;
     chat.tries = 0;
-    await moSay("Ask me again! 👉 <b>How's the weather?</b>");
-    chat.step = 'ask';
-    renderWordbank();
-    $('#chatInput').placeholder = "Ask me: How's the weather?";
+    chat.target = null;
+
+    /* Mo sometimes turns it around and asks about YOUR weather.
+       `true` = run even though we are currently "busy". */
+    if (Math.random() < 0.45) {
+      await startYourWeather(true);
+      if (gen !== chat.gen) return;
+      if (chat.step !== 'you') {            /* it bailed out — recover */
+        await backToAsk(gen);
+      }
+      return;
+    }
+
+    if (await askFollowUp(target)) return;
+    await backToAsk(gen);
     return;
   }
 
+  /* ---------- wrong but a real weather word ---------- */
   if (found) {
     chat.tries++;
     sfx.wrong();
+    renderWordbank();
     if (chat.tries === 1) {
-      const others = chatWords().filter(w => w.id !== target.id && w.kind === target.kind);
-      const other = rnd(others.length ? others : chatWords());
-      const pair = shuffle([target.word.toLowerCase(), other.word.toLowerCase()]);
-      await moSay(`Oops! 🙈 Not <b>${found.id}</b>. Look at the picture again! 👀`);
+      const others = activeWeather().filter(w => w.id !== target.id && w.kind === target.kind);
+      const other = others.length ? rnd(others) : target;
+      const pair = shuffle([target.w.toLowerCase(), other.w.toLowerCase()]);
+      await moSay(`Oops! 🙈 Not <b>${found.id}</b>. Look again! 👀`);
       await moSay(`Is it <b>${pair[0]}</b> or <b>${pair[1]}</b>?`);
     } else {
-      const w = target.word.toLowerCase();
+      const w = target.w.toLowerCase();
       await moSay(`Let me help 💡 It starts with <b>${w[0].toUpperCase()}</b> and has <b>${w.length}</b> letters.`);
     }
     return;
   }
 
+  /* ---------- nothing recognisable ---------- */
   chat.tries++;
   sfx.wrong();
+  renderWordbank();
 
   if (/weather/.test(q) && /how|what/.test(q)) {
     await moSay("Huh? 🤔 That's a question!");
-    await moSay(target.kind === 'noun'
-      ? "Now tell me what is happening: <b>There is …</b>"
+    await moSay(useThere
+      ? 'Now tell me what is happening: <b>There is …</b>'
       : "Now tell me the answer: <b>It's …</b>");
     return;
   }
   if (chat.tries >= 2) {
-    const w = target.word.toLowerCase();
-    await moSay(`Type it with me: <b>${target.ex}</b>`);
+    const w = target.w.toLowerCase();
+    await moSay(`Type it with me: <b>${esc(target.ex)}</b>`);
     await moSay(`It starts with <b>${w[0].toUpperCase()}</b>… 🤫`);
     return;
   }
@@ -2310,38 +2968,164 @@ async function handleAnswer(text) {
   await moSay('Tap a word below 👇 and send it to me.');
 }
 
+/* the student describes the weather where THEY are */
+async function handleYou(text) {
+  const gen = chat.gen;
+  const q = norm(text);
+  const t = chat.youTarget;
+  if (!t) { await backToAsk(gen); return; }
+
+  const found = detectWeather(q);
+  const look = bgOn ? 'Look at the sky around the phone! 👀' : 'Look at the picture! 👀';
+
+  if (found && found.id === t.id) {
+    setStep('busy');
+    chat.youTarget = null;
+    chat.tries = 0;
+    chat.streak++;
+    setStreak(chat.streak);
+    addStars(2);
+    sfx.win(); confetti();
+    speak(t.ex);
+
+    await moSay(`Ooh! <b>${esc(t.ex)}</b> ${t.e} where you are!`);
+    if (gen !== chat.gen) return;
+    await moSay(rnd([
+      'Thank you for telling me! 😊',
+      'I can almost see it from here! 👀',
+      'Lovely! Thank you! 🙏'
+    ]));
+    if (gen !== chat.gen) return;
+
+    if (framesOn.has('like') && t.kind === 'adj' && Math.random() < 0.55) {
+      await moSay(`Do you like <b>${t.w.toLowerCase()}</b> days? 👇`, { delay: 600 });
+      setStep('like');
+      renderWordbank();
+      return;
+    }
+    await backToAsk(gen);
+    return;
+  }
+
+  chat.tries++;
+  sfx.wrong();
+
+  if (found) {
+    await moSay(`Oops! 🙈 Not <b>${found.id}</b>. ${look}`);
+    renderWordbank();
+    return;
+  }
+
+  if (chat.tries === 1) {
+    await moSay('Huh? 🤔 ' + look);
+    await moSay("Tell me: <b>It's …</b>");
+  } else if (chat.tries === 2) {
+    await moSay(`Let me help 💡 It starts with <b>${t.w[0].toUpperCase()}</b> and has <b>${t.w.length}</b> letters.`);
+  } else {
+    await moSay(`It is <b>${esc(t.ex)}</b> ${t.e} Can you type it?`);
+  }
+  renderWordbank();
+}
+
+async function handleLike(text) {
+  const gen = chat.gen;
+  const q = norm(text);
+  const yes = /^(yes|yeah|yep|i do|sure|of course|i like)/.test(q);
+  const no = /^(no|nope|i dont|not really)/.test(q);
+
+  setStep('busy');
+  if (yes) {
+    await moSay(rnd(['Me too! 😍', 'Yay! We are the same! 🙌', 'I love it too! 💛']));
+    setStreak(chat.streak + 1);
+    addStars(1);
+  } else if (no) {
+    await moSay(rnd(['Oh! That is OK. 😊', 'Really? I like it! 😄', 'No problem! 👍']));
+  } else {
+    await moSay('You can say: <b>Yes, I do.</b> or <b>No, I don\'t.</b> 😊');
+    if (gen !== chat.gen) return;
+    setStep('like');
+    renderWordbank();
+    return;
+  }
+  if (gen !== chat.gen) return;
+  await backToAsk(gen);
+}
+
 $('#composer').addEventListener('submit', async e => {
   e.preventDefault();
   const inp = $('#chatInput');
   const text = inp.value.trim();
-
   if (!text) return;
-  if (chat.step === 'busy') return;
+
+  /* watchdog: if Mo has been "typing" for far too long, unfreeze */
+  if (chat.step === 'busy') {
+    const waited = Date.now() - (chat.busyAt || 0);
+    if (waited < 7000) return;                    // still working, ignore
+    hideTyping();
+    const back = (chat.lastStep && chat.lastStep !== 'busy') ? chat.lastStep : 'ask';
+    setStep(back);
+    if (back === 'answer' && !chat.target) setStep('ask');
+    if (back === 'you' && !chat.youTarget) setStep('ask');
+    renderWordbank();
+  }
 
   inp.value = '';
   updateSendState();
   addMsg('me', esc(text));
   sfx.click();
 
-  if (chat.step === 'ask') {
-    await handleAsk(text);
-  } else if (chat.step === 'answer') {
-    await handleAnswer(text);
-  }
+  if (chat.step === 'ask') await handleAsk(text);
+  else if (chat.step === 'answer') await handleAnswer(text);
+  else if (chat.step === 'you') await handleYou(text);
+  else if (chat.step === 'like') await handleLike(text);
 });
 
 $('#chatRestart').onclick = () => {
   sfx.click();
   if ('speechSynthesis' in window) speechSynthesis.cancel();
-  startChat();
+  hideTyping();
+  startChat();                 /* always restarts, even if Mo was mid-flow */
+};
+
+/* ---------- chat toggles ---------- */
+function syncVoiceToggle() {
+  const btn = $('#voiceToggle');
+  btn.classList.toggle('off', !chatVoice);
+  btn.setAttribute('aria-pressed', String(chatVoice));
+  btn.textContent = chatVoice ? '🔊 Voice notes: on' : '🔇 Voice notes: off';
+}
+$('#voiceToggle').onclick = () => {
+  chatVoice = !chatVoice;
+  store.set('chatVoice', chatVoice);
+  sfx.click();
+  syncVoiceToggle();
+  if (chatVoice) speak('Voice notes on.');
+};
+
+function syncBgToggle() {
+  const btn = $('#bgToggle');
+  btn.classList.toggle('off', !bgOn);
+  btn.setAttribute('aria-pressed', String(bgOn));
+  btn.textContent = bgOn ? '🌈 Background: on' : '🌈 Background: off';
+  if (!bgOn) setWeatherBackground(null);
+}
+$('#bgToggle').onclick = () => {
+  bgOn = !bgOn;
+  store.set('chatBg', bgOn);
+  sfx.click();
+  syncBgToggle();
 };
 
 /* =========================================================
    12. Boot
    ========================================================= */
-syncPacks();
+buildSettings();
+syncSettingsUI();
+syncVoiceToggle();
+syncBgToggle();
 renderLearn();
 renderWordbank();
+renderStrip();
 startChat();
 </script>
 </body>
