@@ -169,6 +169,8 @@
     .cat-shapes     { background: #a855f7; }
     .cat-listening  { background: #ec4899; }
     .cat-reading    { background: #f59e0b; color: #fff; }
+    .cat-weather    { background: #0ea5e9; }
+    .cat-vehicles   { background: #0d9488; }
 
     footer {
       text-align: center;
@@ -205,6 +207,8 @@
     <button data-filter="shapes">Shapes</button>
     <button data-filter="listening">Listening</button>
     <button data-filter="reading">Reading</button>
+    <button data-filter="weather">Weather</button>
+    <button data-filter="vehicles">Vehicles</button>
   </div>
 
   <main class="grid" id="grid"></main>
@@ -302,6 +306,33 @@ const GAMES = [
     url: './read/cv-cvc-reading/',
     desc: 'A step-by-step guide to teaching children how to read basic CV and CVC words. Features interactive games, phonics practice, and full audio support — every word is sounded out with voices.',
     tip: 'Perfect for early readers! Students progress from 2-letter blends (CV) to 3-letter words (CVC), building confidence with each level.'
+  },
+  {
+    title: "What's the Weather?",
+    emoji: '☁️',
+    category: ['weather'],
+    bandColor: '#0ea5e9',
+    url: './weather/whats-the-weather/',
+    desc: 'A fun phone-conversation exercise where students practice asking and answering about the weather — "Is it sunny?" "No, it is rainy!" Call out conditions like sunny, cloudy, rainy, snowy, and windy.',
+    tip: 'Great for speaking practice in pairs: have one student pretend to call and ask the weather, then swap roles.'
+  },
+  {
+    title: 'Vehicle Pile-Up',
+    emoji: '🚗',
+    category: ['vehicles'],
+    bandColor: '#0d9488',
+    url: './vehicles/vehicle-pile-up/',
+    desc: 'A quick, high-energy game: vehicles pile up on the road and students shout out vehicle names (car, bus, truck, van, bike) to clear them before a big collision!',
+    tip: 'Perfect for rapid vocabulary recall — students name vehicles as fast as they can to keep the road clear.'
+  },
+  {
+    title: 'Fast & Slow Vehicles',
+    emoji: '🏎️',
+    category: ['vehicles'],
+    bandColor: '#0d9488',
+    url: './vehicles/vehicles-fast-slow/',
+    desc: 'A vehicle-themed quiz with general knowledge questions that unlock fun upgrades. Use it to practise fast vs slow concepts or as a simple vehicle vocabulary test — correct answers reward players with new upgrades!',
+    tip: 'Great as a warm-up or review: students answer questions to earn upgrades and keep their vehicles rolling.'
   }
 ];
 
