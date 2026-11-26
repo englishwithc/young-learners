@@ -171,6 +171,7 @@
     .cat-reading    { background: #f59e0b; color: #fff; }
     .cat-weather    { background: #0ea5e9; }
     .cat-vehicles   { background: #0d9488; }
+    .cat-miscellaneous { background: #be185d; }
 
     footer {
       text-align: center;
@@ -209,6 +210,7 @@
     <button data-filter="reading">Reading</button>
     <button data-filter="weather">Weather</button>
     <button data-filter="vehicles">Vehicles</button>
+    <button data-filter="miscellaneous">Miscellaneous</button>
   </div>
 
   <main class="grid" id="grid"></main>
@@ -333,6 +335,15 @@ const GAMES = [
     url: './vehicles/vehicles-fast-slow/',
     desc: 'A vehicle-themed quiz with general knowledge questions that unlock fun upgrades. Use it to practise fast vs slow concepts or as a simple vehicle vocabulary test — correct answers reward players with new upgrades!',
     tip: 'Great as a warm-up or review: students answer questions to earn upgrades and keep their vehicles rolling.'
+  },
+  {
+    title: 'Wordo-Mon',
+    emoji: '\ud83e\udd0a',
+    category: ['miscellaneous'],
+    bandColor: '#be185d',
+    url: './misc/wordo-mon/',
+    desc: 'A Pokemon-style game where young learners practise a multitude of different vocabulary and skills — every skill can be toggled on or off.',
+    tip: 'A simple but relatively well fleshed out game. Turn skills on or off to match the level and focus of your group.'
   }
 ];
 
