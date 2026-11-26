@@ -11,7 +11,7 @@ This is a single-page index hub (`index.html`) that links to all the individual 
 1. **Navigate to this repo** on GitHub:  
    https://englishwithc.github.io/young-learners/
 
-2. **Use the filter buttons** at the top to quickly jump between categories like Alphabet, Grammar, Body Parts, Colours, Numbers, Family, Shapes, and Listening.
+2. **Use the filter buttons** at the top to quickly jump between categories like Alphabet, Grammar, Body Parts, Colours, Numbers, Family, Shapes, Listening, Reading, Weather, Vehicles, and Miscellaneous.
 
 3. **Click any game card** to see its description, a teacher tip, and a "Play Game" button that opens the game in a new tab.
 
