@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>
-<title>TOY MONSTERS</title>
+<title>WORDO-MON</title>
 <style>
   html,body{margin:0;height:100%;background:#10131f;color:#e8ecf5;
     font-family:"Courier New",monospace;overflow:hidden;}
@@ -20,7 +20,7 @@
 <body>
 <div id="wrap">
   <canvas id="game" width="960" height="720"></canvas>
-  <div id="tips">ARROWS move · Z confirm · 1-4 answer · S hear · A slow · M mute · T test</div>
+  <div id="tips">ARROWS move · Z confirm · 1-4 answer · S hear · A slow · M mute · T test · H tour</div>
 </div>
 <script>
 'use strict';
@@ -37,6 +37,7 @@ const CONFIG={
   mix:{listen:26,picture:24,picchoice:12,letter:14,first:8,rhyme:4,vocab:4,where:8}
 };
 const CFG_KEY='toymon_cfg_v3';
+const SAVE_KEY='toymon_v5';
 
 /* ================== helpers ================== */
 const cvs=document.getElementById('game');
@@ -81,6 +82,18 @@ function txtKid(s,x,y,size,color,align){
   ctx.font='bold '+(size||16)+'px '+KIDFONT;
   ctx.fillStyle=color||'#2b2b3a';ctx.textAlign=align||'left';
   ctx.textBaseline='alphabetic';ctx.fillText(s,x,y);
+}
+function wrapText(s,size,maxW,font){
+  ctx.font='bold '+size+'px '+(font||KIDFONT);
+  const words=String(s).split(' ');
+  const lines=[];let cur='';
+  for(const w of words){
+    const t=cur?cur+' '+w:w;
+    if(ctx.measureText(t).width>maxW&&cur){lines.push(cur);cur=w;}
+    else cur=t;
+  }
+  if(cur)lines.push(cur);
+  return lines;
 }
 function drawEmoji(e,cx,cy,size){
   ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';
@@ -480,17 +493,14 @@ function drawSparkles(cx,cy,r,n){
     ctx.globalAlpha=1;
   }
 }
-
-/* --- the capture chest (not a ball!) --- */
 function drawChest(x,y,s,rot,lid,glow){
   ctx.save();
   ctx.translate(x,y);ctx.rotate(rot);ctx.scale(s,s);
   if(glow>0){
     ctx.globalAlpha=glow*0.85;
-    ctx.beginPath();ctx.arc(0,-6,26,0,7);
     const g=ctx.createRadialGradient(0,-6,2,0,-6,26);
     g.addColorStop(0,'#fff6c0');g.addColorStop(1,'rgba(255,240,160,0)');
-    ctx.fillStyle=g;ctx.fill();
+    ctx.beginPath();ctx.arc(0,-6,26,0,7);ctx.fillStyle=g;ctx.fill();
     ctx.globalAlpha=1;
   }
   const W=34,BH=20;
@@ -510,8 +520,6 @@ function drawChest(x,y,s,rot,lid,glow){
   ctx.restore();
   box(-4,3,8,7,1.5,'#f2c14e','#8a6a10',2);
   txt('★',0,8.6,6,'#6b4a00','center');
-  box(-W/2+2,BH-1,7,3,1,'#6b4a2a',null,0);
-  box(W/2-9,BH-1,7,3,1,'#6b4a2a',null,0);
   ctx.restore();
 }
 
@@ -539,14 +547,11 @@ const VOCAB=[
 ];
 const RELS=['in','on','under','next to','behind','in front of','between'];
 
-function defaultEnabled(){
-  return {
-    cvc:WORDS.map(o=>o.w),
-    vocab:['colour','family'],
-    rel:RELS.slice()
-  };
-}
-CONFIG.enabled=defaultEnabled();
+CONFIG.enabled={
+  cvc:WORDS.map(o=>o.w),
+  vocab:['colour','family'],
+  rel:RELS.slice()
+};
 
 function activeWords(){
   const a=WORDS.filter(o=>CONFIG.enabled.cvc.indexOf(o.w)>=0);
@@ -731,15 +736,7 @@ function drawArt(q,x,y,w,h){
 function artSpeaker(){
   return (x,y,w,h)=>{
     const cx=x+w/2,cy=y+h*0.44,s=Math.min(w,h)*0.52;
-    ctx.fillStyle='#2b2b3a';
-    ctx.beginPath();
-    ctx.moveTo(cx-s*0.58,cy-s*0.24);
-    ctx.lineTo(cx-s*0.16,cy-s*0.24);
-    ctx.lineTo(cx+s*0.20,cy-s*0.60);
-    ctx.lineTo(cx+s*0.20,cy+s*0.60);
-    ctx.lineTo(cx-s*0.16,cy+s*0.24);
-    ctx.lineTo(cx-s*0.58,cy+s*0.24);
-    ctx.closePath();ctx.fill();
+    miniSpeaker(cx,cy,s,'#2b2b3a');
     ctx.strokeStyle='#2b2b3a';ctx.lineWidth=3;
     for(let i=1;i<=3;i++){
       ctx.globalAlpha=1-i*0.22;
@@ -929,7 +926,7 @@ function costOf(u){return Math.round(u.base*(1+state.up[u.id]*0.7));}
 
 function save(){
   try{
-    localStorage.setItem('toymon_v5',JSON.stringify({
+    localStorage.setItem(SAVE_KEY,JSON.stringify({
       caught:state.caught,shiny:state.shiny,starter:state.starter,
       bananas:state.bananas,bananasBeaten:state.bananasBeaten,coins:state.coins,
       up:state.up,quest:state.quest,team:state.team,winShown:state.winShown
@@ -938,7 +935,7 @@ function save(){
 }
 function load(){
   try{
-    const d=JSON.parse(localStorage.getItem('toymon_v5')||'null');
+    const d=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');
     if(!d||!d.starter||!TOYS[d.starter])return;
     state.starter=d.starter;
     state.caught=(d.caught||[]).filter(id=>TOYS[id]);
@@ -1053,7 +1050,7 @@ const worldX=()=>(move?lerp(move.fx,move.tx,move.t):player.gx)*T;
 const worldY=()=>(move?lerp(move.fy,move.ty,move.t):player.gy)*T;
 
 function tryMove(dx,dy){
-  if(dlg.on||trans||winOpen||panel)return;
+  if(dlg.on||trans||winOpen||panel||tut.on)return;
   player.dir=dx>0?'right':dx<0?'left':dy>0?'down':'up';
   const nx=player.gx+dx,ny=player.gy+dy;
   if(!walkable(nx,ny)){
@@ -1080,7 +1077,7 @@ function encounter(){
 const B={
   on:false,phase:'',enemy:null,toy:null,
   eHP:100,eMax:100,eHPv:100,eVis:1,eFlash:0,eShake:0,eAtk:0,eGrow:1,
-  identified:false,sil:1,revealFlash:0,
+  identified:false,revealFlash:0,
   idQ:null,idIdx:0,idCorrect:-1,idDone:false,
   pHP:0,pHPv:0,pMax:1,pSend:0,pFlash:0,pShake:0,pAtk:0,
   msg:'',msgA:1,menuIdx:0,ansIdx:-1,correctIdx:-1,
@@ -1104,7 +1101,7 @@ function startBattle(id,shiny){
   B.enemy={id,banana,shiny:!!shiny,lvl:banana?null:ri(4,8)};
   B.eMax=hp;B.eHP=hp;B.eHPv=hp;
   B.eVis=1;B.eFlash=0;B.eShake=0;B.eAtk=0;
-  B.identified=false;B.sil=1;B.revealFlash=0;
+  B.identified=false;B.revealFlash=0;
   B.idQ=null;B.idIdx=0;B.idCorrect=-1;B.idDone=false;
   B.toy=null;B.pHP=0;B.pHPv=0;B.pMax=1;B.pSend=0;
   B.pFlash=0;B.pShake=0;B.pAtk=0;
@@ -1178,7 +1175,6 @@ function revealEnemy(){
   B.identified=true;
   B.revealFlash=1;
   SFX.reveal();
-  tween(400,p=>{B.sil=1-ease(p);});
 }
 function canHear(){return !!(B.q&&B.q.hear&&B.q.audio&&audioOK());}
 function askQuestion(){
@@ -1693,7 +1689,6 @@ function drawIdentify(){
   const xs=[26,134,242,350];
   q.options.forEach((id,i)=>{
     const x=xs[i],y=256,w=104,h=88;
-    if(!x&&x!==0)return;
     let fill='#f2f4ff',stroke='#2f3550';
     if(B.phase==='idres'){
       if(i===B.idCorrect){fill='#c9f0c0';stroke='#2e7d32';}
@@ -1799,8 +1794,251 @@ function drawBattle(){
   else drawMsgPanel();
 }
 
+/* ================== tutorial ================== */
+function miniHouse(x,y,s){
+  ctx.fillStyle='#f3e3c3';ctx.fillRect(x,y+s*0.4,s,s*0.6);
+  ctx.strokeStyle='#4a3826';ctx.lineWidth=2;ctx.strokeRect(x,y+s*0.4,s,s*0.6);
+  ctx.beginPath();
+  ctx.moveTo(x-4,y+s*0.4);ctx.lineTo(x+s/2,y);ctx.lineTo(x+s+4,y+s*0.4);
+  ctx.closePath();ctx.fillStyle='#c0503f';ctx.fill();
+  ctx.strokeStyle='#4a3826';ctx.stroke();
+  ctx.fillStyle='#8a5a2b';ctx.fillRect(x+s/2-6,y+s*0.66,12,s*0.34);
+}
+
+function tutHello(x,y,w,h){
+  const ids=['ball','doll','robot','rocket'];
+  ids.forEach((id,i)=>{
+    const bob=Math.sin(performance.now()/500+i)*4;
+    drawToy(id,x+70+i*90,y+h/2-14+bob,62);
+  });
+  drawSparkles(x+w/2,y+h/2,90,6);
+}
+
+function tutMap(x,y,w,h){
+  ctx.fillStyle='#8fd189';ctx.fillRect(x,y,w,h);
+  ctx.fillStyle='#79c274';ctx.fillRect(x+w-150,y+20,130,h-40);
+  for(let i=0;i<12;i++){
+    const bx=x+w-146+(i%5)*26,by=y+34+Math.floor(i/5)*44;
+    ctx.fillStyle=i%2?'#3f8f43':'#54a856';
+    ctx.beginPath();
+    ctx.moveTo(bx,by+16);ctx.lineTo(bx+4,by);ctx.lineTo(bx+8,by+16);
+    ctx.closePath();ctx.fill();
+  }
+  ctx.fillStyle='#efd9a4';ctx.fillRect(x,y+h-56,w,26);
+  miniHouse(x+30,y+30,54);
+  drawPerson(x+150,y+h-42,'right',0,
+    {shirt:'#e5533d',cap:'#d33b2a',pants:'#3b4a7a',skin:'#f6cfa0',hair:'#4a2f1c'});
+  txt('ARROWS',x+150,y+h-12,8,'#2b6b2f','center');
+  txt('GRASS',x+w-86,y+14,8,'#1f5a2c','center');
+}
+
+function tutMeet(x,y,w,h){
+  drawToy('doll',x+w/2,y+h/2-24,76,false,true);
+  txtKid('???',x+w/2,y+h/2+30,13,'#2b2b3a','center');
+  txt('WHO IS IT?',x+w/2,y+18,10,'#8a8fa8','center');
+  const ids=['doll','car','ball','drum'];
+  ids.forEach((id,i)=>{
+    const bw=74,bx=x+18+i*94,by=y+h-50;
+    box(bx,by,bw,38,7,'#ffffff','#c8d2e8',2);
+    drawToy(id,bx+bw/2,by+19,26);
+    txt(String(i+1),bx+7,by+13,7,'#9aa0b4');
+  });
+}
+
+function tutQuestion(x,y,w,h){
+  box(x+20,y+16,116,90,8,'#fdf6e3','#3a3a52',2.5);
+  miniSpeaker(x+78,y+52,26,'#2b2b3a');
+  txt('LISTEN',x+78,y+96,8,'#2f6fd4','center');
+  const words=['cat','hat','cup','dog'];
+  words.forEach((wd,i)=>{
+    const bw=124,bx=x+150+(i%2)*132,by=y+24+Math.floor(i/2)*56;
+    const on=i===0;
+    box(bx,by,bw,44,8,on?'#ffe9a8':'#f2f4ff',on?'#b58b00':'#2f3550',2.5);
+    txtKid(wd,bx+20,by+30,17,'#2b2b3a');
+    txt(String(i+1),bx+bw-14,by+15,8,'#9aa0b4','right');
+  });
+}
+
+function tutTile(k,x,y,w,h){
+  box(x,y,w,h,8,'#ffffff','#c8d2e8',2);
+  const cx=x+w/2;
+  const labels={listen:'HEAR WORD',picture:'LOOK PIC',picchoice:'HEAR>PIC',
+    letter:'LETTER',first:'SOUND',rhyme:'RHYME',vocab:'WORD',where:'WHERE'};
+  txt(labels[k],cx,y+13,7,'#5a5a72','center');
+  const my=y+20;
+  if(k==='listen'){
+    miniSpeaker(cx,my+14,14,'#2b2b3a');
+    for(let i=0;i<2;i++)box(x+16,my+30+i*9,w-32,5,2,'#dbe3f2',null,0);
+  }else if(k==='picture'){
+    drawEmoji('🐱',x+24,my+24,22);
+    for(let i=0;i<3;i++)box(x+46,my+12+i*11,w-54,5,2,'#dbe3f2',null,0);
+  }else if(k==='picchoice'){
+    miniSpeaker(cx,my+8,10,'#2b2b3a');
+    drawEmoji('🐱',cx-15,my+32,17);
+    drawEmoji('🐶',cx+15,my+32,17);
+  }else if(k==='letter'){
+    txtKid('c ? t',cx,my+34,17,'#2b2b3a','center');
+  }else if(k==='first'){
+    drawEmoji('🐱',cx-17,my+26,19);
+    txtKid('C',cx+18,my+34,17,'#b57200','center');
+  }else if(k==='rhyme'){
+    txtKid('cat',cx,my+20,13,'#2b2b3a','center');
+    txtKid('hat',cx,my+40,13,'#b3396b','center');
+  }else if(k==='vocab'){
+    box(cx-10,my+8,20,20,5,'#e5484d','#2b2b3a',2);
+  }else{
+    box(cx-13,my+22,26,17,3,'#c99a5b','#5a3d1f',2);
+    ctx.beginPath();ctx.arc(cx,my+16,6,0,7);
+    ctx.fillStyle='#f2c14e';ctx.fill();
+    ctx.strokeStyle='#2b2b3a';ctx.lineWidth=1.5;ctx.stroke();
+  }
+}
+
+function tutTypes(x,y,w,h){
+  const kinds=['listen','picture','picchoice','letter','first','rhyme','vocab','where'];
+  const tw=96,th=74,gx=8,gy=8;
+  const totalW=4*tw+3*gx;
+  const x0=x+(w-totalW)/2;
+  kinds.forEach((k,i)=>{
+    const col=i%4,row=Math.floor(i/4);
+    tutTile(k,x0+col*(tw+gx),y+12+row*(th+gy),tw,th);
+  });
+}
+
+function tutToggles(x,y,w,h){
+  const rows=[['CVC WORDS',true],['COLOURS',true],['FAMILY',false],['PREPOSITIONS',true]];
+  rows.forEach((r,i)=>{
+    const by=y+14+i*36;
+    box(x+40,by,w-80,30,7,'#ffffff','#c8d2e8',2);
+    box(x+52,by+9,13,12,3,r[1]?'#4cc05a':'#ffffff',
+      r[1]?'#2f3550':'#b8bfd0',1.5);
+    if(r[1]){
+      ctx.strokeStyle='#ffffff';ctx.lineWidth=2;
+      ctx.beginPath();
+      ctx.moveTo(x+55,by+15);ctx.lineTo(x+58,by+19);ctx.lineTo(x+64,by+10);
+      ctx.stroke();
+    }
+    txt(r[0],x+76,by+20,10,r[1]?'#2b2b3a':'#9aa0b4');
+    txt(r[1]?'ON':'OFF',x+w-54,by+20,9,r[1]?'#2f8f43':'#a8aec0','right');
+  });
+}
+
+function tutCoins(x,y,w,h){
+  box(x+24,y+16,150,34,8,'#fbfbf2','#2f3550',2);
+  drawEmoji('🪙',x+48,y+33,18);
+  txt('12',x+72,y+40,14,'#2b2b3a');
+  const rows=[['POWER','18c'],['HEALTH','20c'],['BAG','26c']];
+  rows.forEach((r,i)=>{
+    const by=y+18+i*34;
+    box(x+190,by,190,28,7,'#f2f4ff','#d3dcf0',2);
+    txt(r[0],x+202,by+18,10,'#2b2b3a');
+    txt(r[1],x+368,by+18,10,'#1b5e20','right');
+  });
+  txt('SHOP',x+190,y+12,7,'#8a8fa8');
+}
+
+function tutHeal(x,y,w,h){
+  drawEmoji('🍌',x+70,y+56,40);
+  txt('BANANA',x+70,y+96,8,'#8a6a10','center');
+  txt('▶',x+130,y+58,18,'#8a8fa8','center');
+  miniHouse(x+180,y+24,58);
+  box(x+196,y+98,150,11,4,'#3a3a52',null,0);
+  box(x+198,y+100,146,7,3,'#4cc05a',null,0);
+  txt('FULL HEAL',x+271,y+124,9,'#2b6b2f','center');
+}
+
+function tutChest(x,y,w,h){
+  drawChest(x+w/2-58,y+h/2-2,1.5,0,0,0.55);
+  drawSparkles(x+w/2-58,y+h/2-8,44,7);
+  txt('IN BAG!',x+w/2-58,y+h/2+52,10,'#2b2b3a','center');
+  drawToy('robot',x+w/2+86,y+h/2-12,52);
+  txt('15 TOYS',x+w/2+86,y+h/2+42,9,'#8a8fa8','center');
+}
+
+const TUT_STEPS=[
+  {t:'HELLO!',
+   body:'This is WORDO-MON. Walk around, answer English questions, and catch toy monsters.',
+   demo:tutHello},
+  {t:'WALK',
+   body:'Use the ARROW keys to walk. Tall grass hides wild toys. Step into it to meet one.',
+   demo:tutMap},
+  {t:'WHO IS IT?',
+   body:'A toy appears as a black shadow. Guess its name for BONUS damage. Guess wrong and it hits harder!',
+   demo:tutMeet},
+  {t:'ANSWER TO WIN',
+   body:'Press 1, 2, 3 or 4 to answer. Right = your toy attacks. Wrong = the toy attacks you.',
+   demo:tutQuestion},
+  {t:'8 KINDS OF QUESTION',
+   body:'Each kind practises a different skill. Any of them can be switched off in SETTINGS.',
+   demo:tutTypes},
+  {t:'CHOOSE THE WORDS',
+   body:'In SETTINGS you pick the words to practise: CVC words, colours, family, prepositions.',
+   demo:tutToggles},
+  {t:'COINS',
+   body:'Every right answer earns a coin. Spend coins in the blue shop on power, health, bag space and streak.',
+   demo:tutCoins},
+  {t:'BANANAS',
+   body:'Toys do NOT heal after a battle. Beat a banana to get one. One banana = full heal at the green house.',
+   demo:tutHeal},
+  {t:'CATCH THEM ALL',
+   body:'Beat a toy and it goes in your bag. Catch all 15. After that, shiny toys appear!',
+   demo:tutChest}
+];
+
+let tut={on:false,i:0,from:'title'};
+function openTut(from){tut.on=true;tut.i=0;tut.from=from||'title';SFX.select();}
+function closeTut(){
+  tut.on=false;
+  if(tut.from==='settings'){panel='settings';setTab=3;setRow=0;}
+  else{panel=null;}
+  SFX.blip();
+}
+function tutNext(){
+  if(tut.i<TUT_STEPS.length-1){tut.i++;SFX.blip();}
+  else closeTut();
+}
+function tutPrev(){if(tut.i>0){tut.i--;SFX.blip();}}
+function tutKey(k){
+  if(k==='escape'){closeTut();return;}
+  if(k==='m'){muted=!muted;if(muted)stopSpeech();return;}
+  if(k==='arrowleft'){tutPrev();return;}
+  if(k==='z'||k==='enter'||k===' '||k==='arrowright'){tutNext();return;}
+}
+function tutPointer(p){
+  if(inRect(p,436,18,20,20)){closeTut();return;}
+  if(inRect(p,48,302,110,26)){tutPrev();return;}
+  if(inRect(p,322,302,110,26)){tutNext();return;}
+  if(inRect(p,14,10,452,340)){tutNext();return;}
+}
+function drawTutorial(){
+  dim(0.93);
+  box(14,10,452,340,16,'#fbfbf2','#2f3550',4);
+  const s=TUT_STEPS[tut.i];
+  txtO(s.t,240,42,16,'#2b2b3a','#fbfbf2');
+  const lines=wrapText(s.body,12,404,KIDFONT).slice(0,3);
+  lines.forEach((l,i)=>txtKid(l,240,63+i*16,12,'#4a4a63','center'));
+  box(34,112,412,182,10,'#eef6ff','#c8d2e8',2);
+  ctx.save();
+  ctx.beginPath();rr(36,114,408,178,8);ctx.clip();
+  s.demo(36,114,408,178);
+  ctx.restore();
+  box(48,302,110,26,7,tut.i>0?'#f2f4ff':'#e8eaf0',
+    tut.i>0?'#2f3550':'#c8d2e8',2);
+  txt('BACK',103,320,10,tut.i>0?'#2b2b3a':'#a8aec0','center');
+  box(322,302,110,26,7,'#ffe9a8','#b58b00',2);
+  txt(tut.i===TUT_STEPS.length-1?'START':'NEXT',377,320,10,'#6b5000','center');
+  const n=TUT_STEPS.length;
+  TUT_STEPS.forEach((_,i)=>{
+    const dx=240-(n*11)/2+i*11+5;
+    ctx.beginPath();ctx.arc(dx,338,2.6,0,7);
+    ctx.fillStyle=i===tut.i?'#b58b00':'#d3dcf0';ctx.fill();
+  });
+  box(436,18,20,20,5,'#f2f4ff','#c8d2e8',1.5);
+  txt('×',446,32,13,'#7a7a95','center');
+}
+
 /* ================== settings ================== */
-const SET_TABS=['QUESTIONS','GAME','WORDS'];
+const SET_TABS=['QUESTIONS','GAME','WORDS','HELP'];
 const MIX_ROWS=[
   {k:'listen',label:'HEAR WORD'},
   {k:'picture',label:'LOOK PIC'},
@@ -1815,6 +2053,11 @@ const GAME_ROWS=[
   {k:'speed',label:'SPEECH'},
   {k:'hp',label:'ENEMY HP'},
   {k:'enc',label:'GRASS'}
+];
+const HELP_ROWS=[
+  {k:'tut',label:'FIRST TIME TOUR'},
+  {k:'all',label:'TURN ALL WORDS ON'},
+  {k:'reset',label:'RESET SAVE'}
 ];
 let setTab=0,setRow=0,wordScroll=0,resetArmed=false;
 
@@ -1850,20 +2093,22 @@ function rowToggle(r){
   saveSettings();
   SFX.blip();
 }
+function allWordsOn(){
+  CONFIG.enabled.cvc=WORDS.map(o=>o.w);
+  CONFIG.enabled.vocab=['colour','family'];
+  CONFIG.enabled.rel=RELS.slice();
+  saveSettings();
+}
 function tabRows(){
   if(setTab===0)return MIX_ROWS;
   if(setTab===1)return GAME_ROWS;
+  if(setTab===3)return HELP_ROWS;
   return wordRows();
 }
-function setValueText(){
-  if(setTab===0)return String(CONFIG.mix[MIX_ROWS[setRow].k]||0);
-  if(setTab===1){
-    const k=GAME_ROWS[setRow].k;
-    if(k==='speed')return 'x'+CONFIG.speed.toFixed(1);
-    if(k==='hp')return 'x'+CONFIG.enemyHP.toFixed(1);
-    return Math.round(CONFIG.encounterRate*100)+'%';
-  }
-  return '';
+function gameValue(k){
+  if(k==='speed')return 'x'+CONFIG.speed.toFixed(1);
+  if(k==='hp')return 'x'+CONFIG.enemyHP.toFixed(1);
+  return Math.round(CONFIG.encounterRate*100)+'%';
 }
 function setAdjust(dir){
   if(setTab===0){
@@ -1884,14 +2129,29 @@ function switchTab(t){
   setRow=0;wordScroll=0;resetArmed=false;
   SFX.select();
 }
+function helpActivate(i){
+  const r=HELP_ROWS[i];
+  if(!r)return;
+  if(r.k==='tut')openTut('settings');
+  else if(r.k==='all'){allWordsOn();SFX.coin();}
+  else if(r.k==='reset'){
+    if(resetArmed){
+      try{localStorage.removeItem(SAVE_KEY);}catch(e){}
+      state=freshState();
+      panel=null;winOpen=false;starterIdx=0;
+      state.mode='starter';
+      SFX.capture();
+    }else{resetArmed=true;SFX.blip();}
+  }
+}
 function drawSettings(){
   dim(0.9);
   box(14,8,452,336,14,'#fbfbf2','#2f3550',4);
   SET_TABS.forEach((t,i)=>{
-    const x=26+i*140,w=136,y=18;
+    const x=22+i*108,w=104,y=18;
     const on=setTab===i;
     box(x,y,w,24,7,on?'#ffe9a8':'#eef0f6',on?'#b58b00':'#c8d2e8',on?2.5:1.5);
-    txt(t,x+w/2,y+16,10,on?'#6b5000':'#7a7a95','center');
+    txt(t,x+w/2,y+16,9,on?'#6b5000':'#7a7a95','center');
   });
   if(setTab===0){
     MIX_ROWS.forEach((r,i)=>{
@@ -1913,16 +2173,16 @@ function drawSettings(){
       txt(r.label,38,y+18,11,'#2b2b3a');
       txt('◀',300,y+18,12,'#7a7a95','center');
       box(318,y+3,86,21,5,'#ffffff','#c8d2e8',1.5);
-      txt(setTab===1?setValueTextFor(i):'',361,y+18,11,'#2b2b3a','center');
+      txt(gameValue(r.k),361,y+18,11,'#2b2b3a','center');
       txt('▶',422,y+18,12,'#7a7a95','center');
     });
-    txt('SPEECH: normal reading speed for spoken words',38,170,9,'#8a8fa8');
+    txt('SPEECH: reading speed for spoken words',38,170,9,'#8a8fa8');
     txt('ENEMY HP: lower = shorter battles',38,188,9,'#8a8fa8');
     txt('GRASS: chance of meeting a toy per step',38,206,9,'#8a8fa8');
     box(24,240,432,44,8,'#eef6ee','#3f8f43',2);
     txt('HEALING: bananas only, at the green house',38,258,10,'#2b6b2f');
     txt('COINS from correct answers buy upgrades',38,274,10,'#2b6b2f');
-  }else{
+  }else if(setTab===2){
     const rows=wordRows();
     const vis=13;
     if(setRow<wordScroll)wordScroll=setRow;
@@ -1948,7 +2208,9 @@ function drawSettings(){
       box(34,y+3,14,13,3,on?'#4cc05a':'#ffffff',on?'#2f3550':'#b8bfd0',1.5);
       if(on){
         ctx.strokeStyle='#ffffff';ctx.lineWidth=2;
-        ctx.beginPath();ctx.moveTo(37,y+9);ctx.lineTo(40,y+13);ctx.lineTo(46,y+5);ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(37,y+9);ctx.lineTo(40,y+13);ctx.lineTo(46,y+5);
+        ctx.stroke();
       }
       txt(r.label,58,y+14,10,on?'#2b2b3a':'#9aa0b4');
     }
@@ -1959,14 +2221,22 @@ function drawSettings(){
     box(434,52,6,barH,3,'#e6eaf2',null,0);
     box(434,ty,6,th,3,'#8ea0c8',null,0);
     txt((setRow+1)+' / '+n,452,330,8,'#8a8fa8','right');
+  }else{
+    HELP_ROWS.forEach((r,i)=>{
+      const y=54+i*32,sel=setRow===i;
+      if(sel)box(24,y,432,27,6,'#ffe9a8','#b58b00',2);
+      txt(r.label,38,y+18,11,'#2b2b3a');
+      const armed=(r.k==='reset'&&resetArmed);
+      txt(armed?'PRESS Z AGAIN':'PRESS Z',416,y+18,9,
+        armed?'#b3261e':'#7a7a95','right');
+    });
+    txt('New here? Start with the tour.',38,170,9,'#8a8fa8');
+    txt('It shows every question kind and every setting.',38,186,9,'#8a8fa8');
+    box(24,214,432,60,8,'#eef6ff','#3b6fd4',2);
+    txt('THE TOUR IS ALSO ON THE TITLE SCREEN.',38,234,9,'#2f5cb0');
+    txt('Press H there, or tap FIRST TIME?',38,252,9,'#2f5cb0');
   }
   txt('TAB next page · ARROWS change · ESC close',240,336,8,'#7a7a95','center');
-}
-function setValueTextFor(i){
-  const k=GAME_ROWS[i].k;
-  if(k==='speed')return 'x'+CONFIG.speed.toFixed(1);
-  if(k==='hp')return 'x'+CONFIG.enemyHP.toFixed(1);
-  return Math.round(CONFIG.encounterRate*100)+'%';
 }
 
 /* ================== other panels ================== */
@@ -2008,7 +2278,8 @@ function drawHeal(){
     if(p>0.005)box(261,y+9,Math.max(2,118*p),5,2,p<0.3?'#e05252':'#4cc05a',null,0);
   });
   box(60,262,360,34,8,state.bananas>0?'#4cc05a':'#c8ced8','#2f3550',3);
-  txt(state.bananas>0?'Z = HEAL ALL (1 BANANA)':'- NO BANANAS -',240,284,11,'#ffffff','center');
+  txt(state.bananas>0?'Z = HEAL ALL (1 BANANA)':'- NO BANANAS -',
+    240,284,11,'#ffffff','center');
 }
 function drawProf(){
   dim();
@@ -2045,20 +2316,26 @@ function drawTitle(){
     ctx.fillStyle='rgba(255,255,255,'+(0.15+0.55*((i*7)%10)/10)+')';
     ctx.fillRect(x,y,2,2);
   }
-  txtO('TOY MONSTERS',240,104,32,'#ffe066','#1a1a2e');
+  txtO('WORDO-MON',240,90,30,'#ffe066','#1a1a2e');
+  txt('an English word adventure',240,110,9,'#9fb0d8','center');
   TOY_ORDER.slice(0,8).forEach((id,i)=>{
     const bob=Math.sin(performance.now()/520+i*0.8)*5;
-    drawToy(id,60+i*52,192+bob,44);
+    drawToy(id,60+i*52,158+bob,42);
   });
   TOY_ORDER.slice(8).forEach((id,i)=>{
     const bob=Math.sin(performance.now()/520+i*0.9)*5;
-    drawToy(id,112+i*52,248+bob,40);
+    drawToy(id,112+i*52,208+bob,38);
   });
-  if((performance.now()/600|0)%2)txtO('PRESS Z',240,300,15,'#ffffff','#1a1a2e');
+  const pulse=(state.caught.length===0)?(0.5+0.5*Math.sin(performance.now()/420)):0;
+  box(70,246,150,34,9,'#4cc05a','#2f3550',3);
+  txt('PLAY',145,269,13,'#ffffff','center');
+  box(260,246,150,34,9,pulse>0?'#ffe9a8':'#f2f4ff',
+    pulse>0?'#b58b00':'#2f3550',pulse>0?2+2*pulse:2);
+  txt('FIRST TIME?',335,269,11,'#2b2b3a','center');
   const st=audioStatus(),ok=(st==='SOUND OK');
-  box(138,312,204,18,7,ok?'#1f4d2b':'#4a1f24',ok?'#3fbf6a':'#c0503f',2);
-  txt(st,240,325,9,ok?'#8ef0b0':'#f0a0a0','center');
-  txt('R = NEW GAME',90,346,8,'#5f6b88','center');
+  box(138,296,204,18,7,ok?'#1f4d2b':'#4a1f24',ok?'#3fbf6a':'#c0503f',2);
+  txt(st,240,309,9,ok?'#8ef0b0':'#f0a0a0','center');
+  txt('H = TOUR   ·   R = NEW GAME',240,332,8,'#7d89a8','center');
   drawGear(452,30,12);
   txt('SETTINGS',452,54,7,'#7d89a8','center');
 }
@@ -2089,6 +2366,7 @@ function drawStarter(){
   const cur=list[starterIdx];
   txt('Z = START WITH '+TOYS[cur].name,240,300,11,'#ffe066','center');
   txt('ATK '+atkOf(cur)+'   HP '+maxHP(cur),240,320,10,'#9fb0d8','center');
+  txt('H = TOUR',240,340,8,'#7d89a8','center');
 }
 function drawWin(){
   dim(0.78);
@@ -2120,8 +2398,9 @@ function draw(){
     ctx.fillRect(0,VH-h,VW,h);
   }
   if(panel)drawPanel();
+  if(tut.on)drawTutorial();
   if(winOpen)drawWin();
-  if(isTouch&&state.mode==='world'&&!dlg.on&&!winOpen&&!panel)drawTouch();
+  if(isTouch&&state.mode==='world'&&!dlg.on&&!winOpen&&!panel&&!tut.on)drawTouch();
 }
 
 /* ================== update ================== */
@@ -2157,7 +2436,7 @@ function updateWorld(dt){
       move=null;player.walk=0;
       onStep();
     }
-  }else if(!dlg.on&&!trans&&!winOpen&&!panel){
+  }else if(!dlg.on&&!trans&&!winOpen&&!panel&&!tut.on){
     const d=dirHeld();
     if(d)tryMove(d.x,d.y);
   }
@@ -2197,7 +2476,10 @@ function resetGame(){
   save();
 }
 function toggleMute(){muted=!muted;if(muted)stopSpeech();else SFX.blip();}
-function openSettings(){panel='settings';setTab=0;setRow=0;wordScroll=0;resetArmed=false;SFX.select();}
+function openSettings(){
+  panel='settings';setTab=0;setRow=0;wordScroll=0;resetArmed=false;
+  SFX.select();
+}
 
 function buyAt(i){
   if(i<4){
@@ -2236,21 +2518,18 @@ function panelKey(k){
       const n=tabRows().length;
       setRow=(setRow+n-1)%n;resetArmed=false;SFX.blip();
     }else if(k==='arrowleft'){
-      if(setTab===2)switchTab(setTab-1);else setAdjust(-1);
+      if(setTab>=2)switchTab(setTab-1);else setAdjust(-1);
     }else if(k==='arrowright'){
-      if(setTab===2)switchTab(setTab+1);else setAdjust(1);
+      if(setTab>=2)switchTab(setTab+1);else setAdjust(1);
     }else if(k==='z'||k==='enter'||k===' '){
       if(setTab===0||setTab===1)setAdjust(1);
-      else{
+      else if(setTab===2){
         const r=wordRows()[setRow];
-        if(r.t==='all'){
-          CONFIG.enabled.cvc=WORDS.map(o=>o.w);
-          CONFIG.enabled.vocab=['colour','family'];
-          CONFIG.enabled.rel=RELS.slice();
-          saveSettings();SFX.coin();
-        }else if(r.t==='head'){SFX.blip();}
+        if(!r)return;
+        if(r.t==='all'){allWordsOn();SFX.coin();}
+        else if(r.t==='head'){SFX.blip();}
         else rowToggle(r);
-      }
+      }else helpActivate(setRow);
     }
     return;
   }
@@ -2304,6 +2583,7 @@ function battleKey(k){
   }
 }
 function onKey(k){
+  if(tut.on){tutKey(k);return;}
   if(k==='t'){
     unlockSpeech();
     if(audioOK())speakWord('cat');else SFX.blip();
@@ -2317,6 +2597,7 @@ function onKey(k){
   }
   if(state.mode==='title'){
     if(k==='r'){resetGame();return;}
+    if(k==='h'){openTut('title');return;}
     if(k==='z'||k==='enter'||k===' '){
       if(state.starter&&state.team.length)startGame();
       else{SFX.select();state.mode='starter';starterIdx=0;}
@@ -2324,6 +2605,7 @@ function onKey(k){
     return;
   }
   if(state.mode==='starter'){
+    if(k==='h'){openTut('title');return;}
     const list=starterList();
     if(k==='arrowright'||k==='d'){starterIdx=(starterIdx+1)%list.length;SFX.blip();}
     else if(k==='arrowleft'||k==='a'){starterIdx=(starterIdx+list.length-1)%list.length;SFX.blip();}
@@ -2376,8 +2658,8 @@ function drawTouch(){
 }
 function settingsHit(p){
   if(!inRect(p,14,8,452,336)){panel=null;return;}
-  for(let i=0;i<3;i++){
-    if(inRect(p,26+i*140,18,136,24)){switchTab(i);return;}
+  for(let i=0;i<SET_TABS.length;i++){
+    if(inRect(p,22+i*108,18,104,24)){switchTab(i);return;}
   }
   if(setTab===0){
     for(let i=0;i<MIX_ROWS.length;i++){
@@ -2403,22 +2685,25 @@ function settingsHit(p){
     }
     return;
   }
-  const rows=wordRows();
-  for(let i=0;i<13;i++){
-    const idx=wordScroll+i;
-    if(idx>=rows.length)break;
-    const y=52+i*19;
-    if(inRect(p,24,y,404,18)){
-      setRow=idx;
-      const r=rows[idx];
-      if(r.t==='all'){
-        CONFIG.enabled.cvc=WORDS.map(o=>o.w);
-        CONFIG.enabled.vocab=['colour','family'];
-        CONFIG.enabled.rel=RELS.slice();
-        saveSettings();SFX.coin();
-      }else if(r.t!=='head')rowToggle(r);
-      return;
+  if(setTab===2){
+    const rows=wordRows();
+    for(let i=0;i<13;i++){
+      const idx=wordScroll+i;
+      if(idx>=rows.length)break;
+      const y=52+i*19;
+      if(inRect(p,24,y,404,18)){
+        setRow=idx;
+        const r=rows[idx];
+        if(r.t==='all'){allWordsOn();SFX.coin();}
+        else if(r.t!=='head')rowToggle(r);
+        return;
+      }
     }
+    return;
+  }
+  for(let i=0;i<HELP_ROWS.length;i++){
+    const y=54+i*32;
+    if(inRect(p,24,y,432,27)){setRow=i;helpActivate(i);return;}
   }
 }
 cvs.addEventListener('pointerdown',e=>{
@@ -2426,6 +2711,8 @@ cvs.addEventListener('pointerdown',e=>{
   if(!AC)ac();
   unlockSpeech();
   const p=virtPos(e);
+
+  if(tut.on){tutPointer(p);return;}
 
   if(inRect(p,436,6,44,32)){openSettings();return;}
 
@@ -2453,7 +2740,11 @@ cvs.addEventListener('pointerdown',e=>{
     else winOpen=false;
     return;
   }
-  if(state.mode==='title'){onKey('z');return;}
+  if(state.mode==='title'){
+    if(inRect(p,70,246,150,34)){onKey('z');return;}
+    if(inRect(p,260,246,150,34)){openTut('title');return;}
+    return;
+  }
   if(state.mode==='starter'){
     const list=starterList();
     for(let i=0;i<list.length;i++){
