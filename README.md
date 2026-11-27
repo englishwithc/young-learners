@@ -17,6 +17,26 @@ This is a single-page index hub (`index.html`) that links to all the individual 
 
 4. **Want to track student progress?** Open the [Scoring System](https://englishwithc.github.io/useful-games/scoring-pirates-plunder/) in a second window or side-by-side with any game — it works alongside all games for leaderboards and point tracking!
 
+## 🎮 Games
+
+| Game | Link |
+| --- | --- |
+| 🕄 Alphabet Hunt | [Open game](https://englishwithc.github.io/young-learners/alphabet/alphabet-hunt/) |
+| 🧔 It Is / They Are | [Open game](https://englishwithc.github.io/young-learners/basic-grammar/it-is-they-are/) |
+| 🏏 Body Orchestra | [Open game](https://englishwithc.github.io/young-learners/body/body-orchestra/) |
+| 🧦 Colour Block Counter | [Open game](https://englishwithc.github.io/young-learners/colours-and-numbers/colour-block-counter/) |
+| 🍎 How Many Items? | [Open game](https://englishwithc.github.io/young-learners/colours-and-numbers/how-many-items/) |
+| 👨‍👩‍👧‍👦 Family Alt Names | [Open game](https://englishwithc.github.io/young-learners/family/family-alt-names/) |
+| 🎉 Family Surprise | [Open game](https://englishwithc.github.io/young-learners/family/family-surprise/) |
+| 🍺 Shape Village | [Open game](https://englishwithc.github.io/young-learners/shapes/shape-village/) |
+| 🤖 Simon Says Toys | [Open game](https://englishwithc.github.io/young-learners/toys/simon-says-toys) |
+| 📖 CVC Reading Fun! | [Open game](https://englishwithc.github.io/young-learners/read/cv-cvc-reading/) |
+| ☁️ What's the Weather? | [Open game](https://englishwithc.github.io/young-learners/weather/whats-the-weather/) |
+| 🚗 Vehicle Pile-Up | [Open game](https://englishwithc.github.io/young-learners/vehicles/vehicle-pile-up/) |
+| 🏎️ Fast & Slow Vehicles | [Open game](https://englishwithc.github.io/young-learners/vehicles/vehicles-fast-slow/) |
+| 👾 Wordo-Mon | [Open game](https://englishwithc.github.io/young-learners/misc/wordo-mon/) |
+| 🦾 Preposition Robot Dodge 🆕 | [Open game](https://englishwithc.github.io/young-learners/prepositions/on-in-under-by-dash/) |
+
 ## 🎨 Features
 
 - ✅ Color-coded category bands on each card
